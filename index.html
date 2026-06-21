@@ -1,91 +1,48 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
-    <title>Max Ear | Studio Edition</title>
+    <title>Max Ear | PDF Export</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { --dark: #121212; --panel: #1e1e1e; --green: #00e676; --amber: #ffc107; --danger: #d32f2f; }
-        body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: var(--panel); padding: 30px; border-radius: 25px; width: 90%; max-width: 400px; border: 1px solid #333; box-shadow: 0 0 30px rgba(0,0,0,0.5); text-align: center; }
-        
-        .vu-meter { background: #000; height: 100px; border-radius: 15px; display: flex; align-items: center; justify-content: center; color: var(--green); font-family: monospace; font-size: 1.5rem; border: 2px solid #333; margin-bottom: 20px; }
-        
-        h2 { color: var(--amber); margin: 0 0 10px 0; letter-spacing: 2px; }
-        #display { color: var(--green); font-size: 1.2rem; margin-bottom: 20px; min-height: 30px; }
-        
-        button { width: 100%; padding: 15px; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; text-transform: uppercase; transition: 0.3s; }
-        #btnRecord { background: var(--green); color: black; }
-        #btnStop { background: var(--danger); color: white; }
-        #btnStop:disabled { background: #475569; opacity: 0.5; }
+        /* (Mantenha o seu CSS anterior aqui) */
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>MAX EAR PRO</h2>
+    <input type="text" id="inputLetra" placeholder="Cole a letra aqui (opcional)..." style="width:100%; margin-bottom:10px;">
     <div class="vu-meter" id="vu">---</div>
-    <div id="display">Pressione REC para iniciar</div>
+    <div id="display">Aguardando...</div>
     <button id="btnRecord">Rec ◉</button>
-    <button id="btnStop" disabled>Stop ■</button>
+    <button id="btnStop" disabled>Salvar PDF ■</button>
 </div>
 
 <script>
-    let audioCtx, analyser, source, animationId;
-    let historicoNotas = [];
-
-    function hzParaNota(hz) {
-        const notas = ["Dó", "Dó#", "Ré", "Ré#", "Mi", "Fá", "Fá#", "Sol", "Sol#", "Lá", "Lá#", "Si"];
-        const n = 12 * (Math.log(hz / 440) / Math.log(2));
-        const indice = Math.round(n) + 57;
-        return notas[indice % 12];
-    }
-
-    document.getElementById('btnRecord').onclick = async () => {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 2048;
-        source = audioCtx.createMediaStreamSource(stream);
-        source.connect(analyser);
-        
-        historicoNotas = [];
-        document.getElementById('btnRecord').disabled = true;
-        document.getElementById('btnStop').disabled = false;
-        
-        capturar();
-    };
-
-    function capturar() {
-        const dataArray = new Float32Array(analyser.frequencyBinCount);
-        analyser.getFloatFrequencyData(dataArray);
-        
-        let maxIndex = 0;
-        for (let i = 1; i < dataArray.length; i++) if (dataArray[i] > dataArray[maxIndex]) maxIndex = i;
-        const hz = maxIndex * (audioCtx.sampleRate / analyser.fftSize);
-
-        if (hz > 80 && hz < 1000) {
-            const nota = hzParaNota(hz);
-            document.getElementById('vu').innerText = nota;
-            document.getElementById('display').innerText = "Capturando: " + nota;
-            historicoNotas.push(nota);
-        }
-        animationId = requestAnimationFrame(capturar);
-    }
+    // ... (Mantenha toda a lógica de áudio anterior) ...
 
     document.getElementById('btnStop').onclick = () => {
         cancelAnimationFrame(animationId);
         audioCtx.close();
         
-        const blob = new Blob(["Transcrição Max Ear:\n\n" + historicoNotas.join(" - ")], { type: 'text/plain' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `Cifra_${new Date().toLocaleDateString().replace(/\//g,'-')}.txt`;
-        a.click();
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const letra = document.getElementById('inputLetra').value;
         
-        document.getElementById('display').innerText = "Cifra salva!";
-        document.getElementById('btnRecord').disabled = false;
-        document.getElementById('btnStop').disabled = true;
+        doc.setFontSize(20);
+        doc.text("Cifra: " + new Date().toLocaleDateString(), 20, 20);
+        
+        doc.setFontSize(14);
+        if (letra) {
+            doc.text("Letra:", 20, 40);
+            doc.text(letra, 20, 50);
+            doc.text("Acordes detectados:", 20, 100);
+        }
+        
+        doc.text(historicoNotas.join(" - "), 20, 120);
+        doc.save("Cifra_MaxEar.pdf"); // Gera o PDF automaticamente
     };
 </script>
 </body>
