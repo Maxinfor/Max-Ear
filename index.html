@@ -2,82 +2,117 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Max Ear | Studio Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Max Ear Studio</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { --dark: #121212; --green: #00e676; --amber: #ffc107; --danger: #d32f2f; }
-        body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: #1a1a1a; padding: 25px; border-radius: 30px; width: 380px; text-align: center; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        canvas { width: 100%; height: 120px; background: #000; border-radius: 15px; border: 1px solid #444; margin-bottom: 20px; }
-        .display { font-size: 2.5rem; color: var(--green); margin: 10px 0; font-weight: bold; text-shadow: 0 0 10px rgba(0,230,118,0.5); }
-        textarea { width: 100%; background: #121212; border: 1px solid #333; color: white; padding: 12px; border-radius: 12px; margin-bottom: 15px; box-sizing: border-box; }
-        button { width: 48%; padding: 12px; border-radius: 50px; border: none; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
-        #btnRecord { background: var(--green); color: black; }
-        #btnStop { background: var(--danger); color: white; }
+        :root { --neon: #00e676; --bg: #0a0a0a; --panel: #161616; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: var(--panel); padding: 20px; border-radius: 20px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; border: 1px solid #333; }
+        canvas { width: 100%; height: 100px; background: #000; border-radius: 10px; margin-bottom: 15px; border: 1px solid var(--neon); }
+        .display { font-size: 2.5rem; color: var(--neon); margin: 10px 0; font-weight: bold; text-shadow: 0 0 10px rgba(0,230,118,0.3); }
+        textarea { width: 100%; background: #000; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; }
+        .btn-group { display: flex; gap: 10px; }
+        button { flex: 1; padding: 15px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        #btnRecord { background: var(--neon); color: #000; }
+        #btnStop { background: #d32f2f; color: #fff; }
+        button:disabled { background: #333; opacity: 0.5; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 style="color:var(--amber); margin-bottom:20px;">MAX EAR STUDIO</h2>
+    <h2 style="letter-spacing: 3px; margin: 0 0 10px 0;">MAX EAR STUDIO</h2>
     <canvas id="visualizer"></canvas>
     <div id="display" class="display">---</div>
-    <textarea id="inputLetra" rows="3" placeholder="Letra da música..."></textarea>
-    <div>
-        <button id="btnRecord">Rec ◉</button>
-        <button id="btnStop" disabled>Salvar ■</button>
+    <textarea id="inputLetra" rows="3" placeholder="Cole a letra da música..."></textarea>
+    <div class="btn-group">
+        <button id="btnRecord">REC ◉</button>
+        <button id="btnStop" disabled>STOP ■</button>
     </div>
 </div>
 
 <script>
-    let audioCtx, analyser, animationId, canvasCtx;
-    const canvas = document.getElementById('visualizer');
-    canvasCtx = canvas.getContext('2d');
+    let audioCtx, analyser, animationId, source, stream;
     let historicoAcordes = [], ultimaNota = null, contagemEst = 0;
-    const LIMITE_EST = 10;
-
+    const canvas = document.getElementById('visualizer');
+    const canvasCtx = canvas.getContext('2d');
+    
     const dicionario = { "Dó,Mi,Sol":"C", "Ré,Fá,Lá":"Dm", "Mi,Sol,Si":"Em", "Fá,Lá,Dó":"F", "Sol,Si,Ré":"G", "Lá,Dó,Mi":"Am" };
 
+    function hzParaNota(hz) {
+        const notas = ["Dó", "Dó#", "Ré", "Ré#", "Mi", "Fá", "Fá#", "Sol", "Sol#", "Lá", "Lá#", "Si"];
+        const n = 12 * (Math.log(hz / 440) / Math.log(2));
+        const indice = Math.round(n) + 57;
+        return notas[indice % 12];
+    }
+
     function desenharOnda() {
-        const bufferLength = analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-        analyser.getByteTimeDomainData(dataArray);
-        canvasCtx.fillStyle = '#000'; canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+        const buffer = analyser.frequencyBinCount;
+        const data = new Uint8Array(buffer);
+        analyser.getByteTimeDomainData(data);
+        canvasCtx.fillStyle = '#000'; canvasCtx.fillRect(0,0,canvas.width,canvas.height);
         canvasCtx.lineWidth = 2; canvasCtx.strokeStyle = '#00e676';
         canvasCtx.beginPath();
-        let sliceWidth = canvas.width / bufferLength;
-        let x = 0;
-        for(let i = 0; i < bufferLength; i++) {
-            let v = dataArray[i] / 128.0;
+        for(let i=0; i<buffer; i++) {
+            let v = data[i]/128.0; let x = (i/buffer)*canvas.width;
             let y = v * canvas.height/2;
-            if(i === 0) canvasCtx.moveTo(x, y); else canvasCtx.lineTo(x, y);
-            x += sliceWidth;
+            i===0 ? canvasCtx.moveTo(x,y) : canvasCtx.lineTo(x,y);
         }
-        canvasCtx.lineTo(canvas.width, canvas.height/2);
         canvasCtx.stroke();
         animationId = requestAnimationFrame(desenharOnda);
     }
 
-    // [Restante da lógica de processamento igual à anterior...]
-    // A função capturar() deve ser chamada junto com desenharOnda()
-    
+    async function capturar() {
+        const data = new Float32Array(analyser.frequencyBinCount);
+        analyser.getFloatFrequencyData(data);
+        let picos = [];
+        for(let i=1; i<data.length; i++) if(data[i] > -50) picos.push({ hz: i * (44100/2048), val: data[i] });
+        picos.sort((a,b) => b.val - a.val);
+        let notasFortes = picos.slice(0,3).map(p => hzParaNota(p.hz)).sort();
+        let acorde = dicionario[notasFortes.join(",")] || "---";
+
+        if(acorde !== "---") {
+            if(acorde === ultimaNota) { if(contagemEst < 10) contagemEst++; }
+            else { contagemEst = 0; ultimaNota = acorde; }
+            if(contagemEst === 10) {
+                if(!historicoAcordes.length || historicoAcordes[historicoAcordes.length-1].acorde !== acorde) {
+                    historicoAcordes.push({acorde, time: new Date().toLocaleTimeString()});
+                    document.getElementById('display').innerText = acorde;
+                }
+            }
+        }
+        if(document.getElementById('btnStop').disabled === false) animationId = requestAnimationFrame(capturar);
+    }
+
     document.getElementById('btnRecord').onclick = async () => {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioCtx = new AudioContext();
         analyser = audioCtx.createAnalyser();
         analyser.fftSize = 2048;
         source = audioCtx.createMediaStreamSource(stream);
         source.connect(analyser);
-        desenharOnda();
-        capturar();
+        historicoAcordes = [];
         document.getElementById('btnRecord').disabled = true;
         document.getElementById('btnStop').disabled = false;
+        desenharOnda();
+        capturar();
     };
 
-    function hzParaNota(hz) { /* ... lógica já definida ... */ }
-    function capturar() { /* ... lógica de picos e dicionário ... */ }
-    document.getElementById('btnStop').onclick = () => { /* ... lógica PDF ... */ }
-
+    document.getElementById('btnStop').onclick = () => {
+        cancelAnimationFrame(animationId);
+        stream.getTracks().forEach(t => t.stop());
+        audioCtx.close();
+        document.getElementById('btnRecord').disabled = false;
+        document.getElementById('btnStop').disabled = true;
+        
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text("Cifra Gerada - Max Ear", 20, 20);
+        doc.text("Letra: " + document.getElementById('inputLetra').value, 20, 40);
+        historicoAcordes.forEach((h, i) => doc.text(`${i+1}. Acorde: ${h.acorde} às ${h.time}`, 20, 60 + (i*10)));
+        doc.save("Cifra_MaxEar.pdf");
+    };
 </script>
 </body>
 </html>
