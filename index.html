@@ -54,3 +54,26 @@
         canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
         canvasCtx.strokeStyle = '#10b981';
         canvasCtx.lineWidth = 2;
+        canvasCtx.beginPath();
+
+        const sliceWidth = canvas.width / bufferLength;
+        let x = 0;
+        for(let i = 0; i < bufferLength; i++) {
+            const v = dataArray[i] / 128.0;
+            const y = v * canvas.height / 2;
+            i === 0 ? canvasCtx.moveTo(x, y) : canvasCtx.lineTo(x, y);
+            x += sliceWidth;
+        }
+        canvasCtx.lineTo(canvas.width, canvas.height / 2);
+        canvasCtx.stroke();
+    }
+
+    document.getElementById('btnStop').onclick = () => {
+        audioCtx.close();
+        document.getElementById('status').innerText = "Cifra salva com sucesso!";
+        document.getElementById('btnRecord').disabled = false;
+        document.getElementById('btnStop').disabled = true;
+    };
+</script>
+</body>
+</html>
