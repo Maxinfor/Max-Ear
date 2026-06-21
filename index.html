@@ -1,63 +1,72 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta charset="UTF-8">
-    <title>Max Ear Pro | Analisador de Acordes</title>
+    <title>Max Ear Pro</title>
     <style>
-        :root { --primary: #2563eb; --accent: #10b981; --bg: #0f172a; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: #1e293b; padding: 2rem; border-radius: 20px; box-shadow: 0 20px 25px rgba(0,0,0,0.3); width: 100%; max-width: 450px; text-align: center; }
-        canvas { width: 100%; height: 150px; background: #000; border-radius: 10px; margin: 20px 0; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        :root { --bg: #0f172a; --primary: #22c55e; --danger: #ef4444; --text: #ffffff; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 400px; text-align: center; background: #1e293b; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        canvas { width: 100%; height: 150px; background: #000; border-radius: 12px; margin: 20px 0; border: 1px solid #334155; }
+        .btn-grid { display: grid; gap: 15px; }
+        button { padding: 18px; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.3s; touch-action: manipulation; }
         #btnRecord { background: var(--primary); color: white; }
-        #btnStop { background: #ef4444; color: white; }
-        #status { font-size: 0.9rem; color: var(--accent); margin-top: 10px; }
+        #btnStop { background: var(--danger); color: white; }
+        #btnStop:disabled { background: #475569; opacity: 0.5; }
+        #status { margin-bottom: 15px; font-size: 0.9rem; color: #94a3b8; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>Max Ear Pro</h2>
-    <canvas id="visualizer"></canvas>
     <div id="status">Pronto para capturar</div>
-    <button class="btn" id="btnRecord">INICIAR TRANSCRIÇÃO</button>
-    <button class="btn" id="btnStop" disabled>PARAR E SALVAR</button>
+    <canvas id="visualizer"></canvas>
+    <div class="btn-grid">
+        <button id="btnRecord">GRAVAR</button>
+        <button id="btnStop" disabled>PARAR E SALVAR</button>
+    </div>
 </div>
 
 <script>
-    let audioCtx, analyser, dataArray, source;
+    let audioCtx, analyser, source, mediaRecorder;
+    let chunks = [];
     const canvas = document.getElementById('visualizer');
     const canvasCtx = canvas.getContext('2d');
 
     document.getElementById('btnRecord').onclick = async () => {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        source = audioCtx.createMediaStreamSource(stream);
-        
         analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 2048;
+        source = audioCtx.createMediaStreamSource(stream);
         source.connect(analyser);
 
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = e => chunks.push(e.data);
+        mediaRecorder.start();
+
         draw();
-        document.getElementById('status').innerText = "Analisando frequências...";
+        document.getElementById('status').innerText = "Ouvindo e analisando...";
         document.getElementById('btnRecord').disabled = true;
         document.getElementById('btnStop').disabled = false;
     };
 
     function draw() {
+        if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
         requestAnimationFrame(draw);
         const bufferLength = analyser.frequencyBinCount;
-        dataArray = new Uint8Array(bufferLength);
+        const dataArray = new Uint8Array(bufferLength);
         analyser.getByteTimeDomainData(dataArray);
 
         canvasCtx.fillStyle = 'black';
         canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-        canvasCtx.strokeStyle = '#10b981';
+        canvasCtx.strokeStyle = '#22c55e';
         canvasCtx.lineWidth = 2;
         canvasCtx.beginPath();
 
-        const sliceWidth = canvas.width / bufferLength;
         let x = 0;
+        const sliceWidth = canvas.width / bufferLength;
         for(let i = 0; i < bufferLength; i++) {
             const v = dataArray[i] / 128.0;
             const y = v * canvas.height / 2;
@@ -69,10 +78,19 @@
     }
 
     document.getElementById('btnStop').onclick = () => {
-        audioCtx.close();
-        document.getElementById('status').innerText = "Cifra salva com sucesso!";
-        document.getElementById('btnRecord').disabled = false;
-        document.getElementById('btnStop').disabled = true;
+        mediaRecorder.stop();
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Cifra_${new Date().toISOString().slice(0,10)}.txt`;
+            a.click();
+            chunks = [];
+            document.getElementById('status').innerText = "Cifra salva em Downloads!";
+            document.getElementById('btnRecord').disabled = false;
+            document.getElementById('btnStop').disabled = true;
+        };
     };
 </script>
 </body>
