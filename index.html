@@ -8,16 +8,11 @@
     <style>
         :root { --dark: #121212; --panel: #1e1e1e; --green: #00e676; --amber: #ffc107; --danger: #d32f2f; }
         body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        
         .container { background: var(--panel); padding: 30px; border-radius: 25px; width: 100%; max-width: 400px; border: 1px solid #333; box-shadow: 0 0 30px rgba(0,0,0,0.5); text-align: center; }
-        
         .vu-meter { background: #000; height: 100px; border-radius: 15px; display: flex; align-items: center; justify-content: center; color: var(--green); font-family: monospace; font-size: 1.5rem; border: 2px solid #333; margin-bottom: 20px; }
-        
         h2 { color: var(--amber); margin: 0 0 10px 0; letter-spacing: 2px; text-transform: uppercase; }
         #display { color: var(--green); font-size: 1.2rem; margin-bottom: 15px; min-height: 30px; }
-        
         textarea { width: 100%; background: #121212; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; resize: none; }
-        
         button { width: 100%; padding: 15px; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; text-transform: uppercase; transition: 0.3s; }
         #btnRecord { background: var(--green); color: black; }
         #btnStop { background: var(--danger); color: white; }
@@ -30,9 +25,7 @@
     <h2>Max Ear Pro</h2>
     <div class="vu-meter" id="vu">---</div>
     <div id="display">Pronto para capturar</div>
-    
     <textarea id="inputLetra" rows="3" placeholder="Cole a letra da música aqui..."></textarea>
-    
     <button id="btnRecord">Rec ◉</button>
     <button id="btnStop" disabled>Salvar PDF ■</button>
 </div>
@@ -40,6 +33,9 @@
 <script>
     let audioCtx, analyser, animationId;
     let historicoNotas = [];
+    let ultimaNota = null;
+    let contagemEstabilidade = 0;
+    const LIMITE_ESTABILIDADE = 8;
 
     function hzParaNota(hz) {
         const notas = ["Dó", "Dó#", "Ré", "Ré#", "Mi", "Fá", "Fá#", "Sol", "Sol#", "Lá", "Lá#", "Si"];
@@ -71,10 +67,23 @@
         const hz = maxIndex * (audioCtx.sampleRate / analyser.fftSize);
 
         if (hz > 80 && hz < 1000) {
-            const nota = hzParaNota(hz);
-            document.getElementById('vu').innerText = nota;
-            document.getElementById('display').innerText = "Detectando: " + nota;
-            historicoNotas.push(nota);
+            const notaAtual = hzParaNota(hz);
+            if (notaAtual === ultimaNota) {
+                if (contagemEstabilidade < LIMITE_ESTABILIDADE) contagemEstabilidade++;
+            } else {
+                contagemEstabilidade = 0;
+                ultimaNota = notaAtual;
+            }
+
+            if (contagemEstabilidade === LIMITE_ESTABILIDADE) {
+                const agora = Date.now();
+                const ultima = historicoNotas[historicoNotas.length - 1];
+                if (!ultima || ultima.nota !== notaAtual) {
+                    historicoNotas.push({ nota: notaAtual, timestamp: agora });
+                    document.getElementById('vu').innerText = notaAtual;
+                    document.getElementById('display').innerText = "Detectando: " + notaAtual;
+                }
+            }
         }
         animationId = requestAnimationFrame(capturar);
     }
@@ -89,16 +98,21 @@
         
         doc.setFontSize(20);
         doc.text("Cifra Gerada - Max Ear", 20, 20);
-        
         doc.setFontSize(12);
-        doc.text("Letra:", 20, 40);
-        doc.text(letra || "Nenhuma letra inserida.", 20, 50, { maxWidth: 170 });
+        doc.text("Letra: " + (letra || "Nenhuma"), 20, 40);
         
-        doc.text("Sequência de Notas Detectadas:", 20, 100);
-        doc.text(historicoNotas.join(" - "), 20, 110, { maxWidth: 170 });
+        doc.text("Sequência com Duração:", 20, 70);
+        let y = 80;
+        for (let i = 0; i < historicoNotas.length; i++) {
+            let duracao = (i < historicoNotas.length - 1) 
+                ? ((historicoNotas[i+1].timestamp - historicoNotas[i].timestamp) / 1000).toFixed(1) + "s" 
+                : "fim";
+            doc.text(`${historicoNotas[i].nota} (${duracao})`, 20, y);
+            y += 7;
+            if (y > 280) { doc.addPage(); y = 20; }
+        }
         
         doc.save("Cifra_MaxEar.pdf");
-        
         document.getElementById('display').innerText = "PDF gerado!";
         document.getElementById('btnRecord').disabled = false;
         document.getElementById('btnStop').disabled = true;
