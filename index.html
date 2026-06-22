@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+        <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -7,30 +7,30 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * { touch-action: manipulation; box-sizing: border-box; }
-        body { background: #050505; color: #fff; font-family: sans-serif; margin: 0; height: 100vh; overflow: hidden; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 400px; height: 100%; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        body { background: #050505; color: #fff; font-family: sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; }
         
-        canvas { width: 100%; height: 100px; background: #000; border: 1px solid #333; border-radius: 8px; }
+        .container { flex: 1; padding: 15px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
         
-        .display-area { background: #151515; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #00e676; }
-        .display { font-size: 1.8rem; color: #00e676; font-weight: bold; }
+        canvas { width: 100%; height: 100px; background: #000; border: 1px solid #333; border-radius: 8px; flex-shrink: 0; }
         
-        /* Grid dos 3 modos */
-        .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        .display-area { background: #151515; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #00e676; flex-shrink: 0; }
+        .display { font-size: 1.5rem; color: #00e676; font-weight: bold; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; flex-shrink: 0; }
         button { padding: 12px 5px; border-radius: 6px; border: none; font-weight: 600; background: #222; color: #fff; cursor: pointer; font-size: 0.75rem; }
         button.active { background: #00e676; color: #000; }
         
-        /* Botões de controle fixos no rodapé */
-        .footer { display: flex; gap: 8px; margin-top: auto; }
+        /* Rodapé fixo */
+        .footer { display: flex; gap: 10px; padding: 15px; background: #111; border-top: 1px solid #333; }
         #btnRecord { flex: 2; background: #00e676; color: #000; padding: 15px; font-weight: bold; }
         #btnStop { flex: 1; background: #d32f2f; color: #fff; padding: 15px; font-weight: bold; }
-        button:disabled { opacity: 0.3; cursor: not-allowed; }
+        button:disabled { opacity: 0.4; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div style="text-align: center; font-size: 0.7rem; color: #666; letter-spacing: 1px;">MAX EAR STUDIO</div>
+    <div style="text-align: center; font-size: 0.7rem; color: #666;">MAX EAR STUDIO</div>
     <canvas id="visualizer"></canvas>
     
     <div class="display-area">
@@ -42,11 +42,11 @@
         <button class="mode-btn" onclick="setModo('ACORDES', this)">ACORDES</button>
         <button class="mode-btn" onclick="setModo('MELODIA', this)">MELODIA</button>
     </div>
+</div>
 
-    <div class="footer">
-        <button id="btnRecord">INICIAR</button>
-        <button id="btnStop" disabled>EXPORTAR</button>
-    </div>
+<div class="footer">
+    <button id="btnRecord">INICIAR</button>
+    <button id="btnStop" disabled>EXPORTAR</button>
 </div>
 
 <script>
@@ -76,7 +76,6 @@
         let buffer = new Float32Array(analyser.frequencyBinCount);
         analyser.getFloatFrequencyData(buffer);
 
-        // Desenhar osciloscópio
         ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
         ctx.strokeStyle = '#00e676'; ctx.beginPath();
         for(let i=0; i<canvas.width; i++) {
@@ -85,7 +84,6 @@
         }
         ctx.stroke();
 
-        // Identificação
         let maxIdx = buffer.indexOf(Math.max(...buffer));
         let freq = maxIdx * (audioCtx.sampleRate / 2048);
         let n = Math.round(12 * (Math.log(freq / 440) / Math.log(2)) + 69);
