@@ -2,84 +2,106 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Max Ear Studio Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Max Ear Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/cwilso/PitchDetect/js/pitchdetect.js"></script>
     <style>
-        body { background: #0a0a0a; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: #161616; padding: 20px; border-radius: 20px; width: 95%; max-width: 400px; text-align: center; border: 1px solid #333; }
-        canvas { width: 100%; height: 100px; background: #000; border-radius: 10px; margin-bottom: 10px; border: 1px solid #00e676; }
-        .display { font-size: 2rem; color: #00e676; margin: 10px 0; font-weight: bold; height: 50px; }
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 15px; }
-        button { padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
-        .active { background: #00e676 !important; color: #000; }
+        * { touch-action: manipulation; box-sizing: border-box; }
+        body { 
+            background: #050505; color: #fff; font-family: 'Helvetica Neue', sans-serif; 
+            margin: 0; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; 
+        }
+        .container { 
+            width: 100%; max-width: 400px; height: 100%; background: #111; 
+            display: flex; flex-direction: column; padding: 20px; gap: 15px;
+        }
+        canvas { width: 100%; height: 120px; background: #000; border: 1px solid #222; border-radius: 12px; }
+        .display-area { 
+            background: #1a1a1a; padding: 20px; border-radius: 15px; text-align: center;
+            border-bottom: 3px solid #00e676;
+        }
+        .display { font-size: 2.5rem; color: #00e676; font-weight: 800; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        button { 
+            padding: 15px 5px; border-radius: 12px; border: none; font-weight: 600; 
+            background: #222; color: #fff; cursor: pointer; transition: 0.2s;
+        }
+        button.active { background: #00e676; color: #000; }
+        .main-controls { display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
+        #btnRecord { background: #00e676; color: #000; padding: 20px; font-size: 1.1rem; }
+        #btnStop { background: #333; color: #fff; padding: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <div style="text-align: center; font-weight: bold; letter-spacing: 2px;">MAX EAR STUDIO</div>
     <canvas id="visualizer"></canvas>
-    <div id="display" class="display">---</div>
+    
+    <div class="display-area">
+        <div id="display" class="display">---</div>
+    </div>
+
     <div class="btn-grid">
         <button class="mode-btn" onclick="setModo('AFINADOR', this)">AFINADOR</button>
         <button class="mode-btn" onclick="setModo('ACORDES', this)">ACORDES</button>
         <button class="mode-btn" onclick="setModo('MELODIA', this)">MELODIA</button>
     </div>
-    <button id="btnRecord" style="width:100%; background:#00e676; padding:15px;">INICIAR</button>
-    <button id="btnStop" style="width:100%; margin-top:5px; background:#d32f2f; padding:15px;" disabled>PARAR/PDF</button>
+
+    <div class="main-controls">
+        <button id="btnRecord">INICIAR MONITORAMENTO</button>
+        <button id="btnStop" disabled>PARAR E EXPORTAR PDF</button>
+    </div>
 </div>
 
 <script>
-    let audioCtx, analyser, modoAtual = 'AFINADOR', historico = [], buffer = [];
-    let rafID = null;
+    let audioCtx, analyser, modoAtual = 'AFINADOR', buffer = [];
     const canvas = document.getElementById('visualizer'), ctx = canvas.getContext('2d');
-    const noteStrings = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    const notasRef = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
     function setModo(m, btn) {
         modoAtual = m;
         document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         buffer = [];
+        document.getElementById('display').innerText = m;
     }
 
-    // Função de detecção de Pitch (Autocorrelação)
-    function updatePitch() {
-        let array = new Float32Array(1024);
-        analyser.getFloatTimeDomainData(array);
-        let pitch = autoCorrelate(array, audioCtx.sampleRate);
-        
-        if (pitch !== -1) {
-            let note = Math.round( 12 * (Math.log(pitch / 440) / Math.log(2)) + 69 );
-            let notaNome = noteStrings[note % 12];
-            
-            if(modoAtual === 'MELODIA') {
-                document.getElementById('display').innerText = notaNome;
-                historico.push({tipo:'Melodia', valor: notaNome});
-            } else if(modoAtual === 'ACORDES') {
-                buffer.push(notaNome);
-                if(buffer.length > 20) {
-                    let unique = [...new Set(buffer)];
-                    document.getElementById('display').innerText = "Acordes detectados...";
-                    // Aqui sua lógica de dicionário de acordes
-                    buffer = [];
-                }
-            }
+    function getPitch(data) {
+        let count = 0;
+        for (let i = 0; i < data.length - 1; i++) {
+            if (data[i] < 0 && data[i + 1] >= 0) count++;
         }
-        rafID = requestAnimationFrame(updatePitch);
+        return (count * 44100) / data.length;
+    }
+
+    function render() {
+        let data = new Float32Array(2048);
+        analyser.getFloatTimeDomainData(data);
+        
+        ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.strokeStyle = '#00e676'; ctx.beginPath();
+        for(let i=0; i<data.length; i++) ctx.lineTo(i/data.length*canvas.width, (data[i]*0.5+0.5)*canvas.height);
+        ctx.stroke();
+
+        let hz = getPitch(data);
+        if (hz > 50 && hz < 2000) {
+            let n = Math.round(12 * (Math.log(hz / 440) / Math.log(2)) + 69);
+            let nota = notasRef[n % 12];
+            document.getElementById('display').innerText = nota;
+        }
+        if(!document.getElementById('btnStop').disabled) requestAnimationFrame(render);
     }
 
     document.getElementById('btnRecord').onclick = async () => {
         const stream = await navigator.mediaDevices.getUserMedia({audio:true});
         audioCtx = new AudioContext(); analyser = audioCtx.createAnalyser();
         audioCtx.createMediaStreamSource(stream).connect(analyser);
-        updatePitch();
         document.getElementById('btnStop').disabled = false;
+        render();
     };
 
-    document.getElementById('btnStop').onclick = () => {
-        cancelAnimationFrame(rafID);
-        location.reload();
-    };
+    document.getElementById('btnStop').onclick = () => location.reload();
 </script>
 </body>
 </html>
