@@ -2,109 +2,115 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Max Ear Studio - Pro</title>
+    <title>Max Ear Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { --neon: #00e676; --bg: #0a0a0a; --glass: rgba(255,255,255,0.1); }
-        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: var(--glass); backdrop-filter: blur(15px); padding: 20px; border-radius: 25px; width: 90%; max-width: 400px; border: 1px solid rgba(255,255,255,0.2); text-align: center; }
-        canvas { width: 100%; height: 80px; background: #000; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--neon); }
-        .display { font-size: 1.5rem; color: var(--neon); margin: 15px 0; font-weight: bold; height: 50px; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.3); border-radius: 10px; }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 10px; border: 1px solid #444; background: #111; color: #fff; box-sizing: border-box; }
-        .btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
-        button { padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 0.8rem; }
-        #btnRecord { background: var(--neon); color: #000; width: 100%; padding: 15px; font-size: 1rem; }
-        #btnStop { background: #d32f2f; color: #fff; width: 100%; margin-top: 10px; padding: 15px; }
-        .mode-btn { background: #333; color: #fff; }
-        .mode-btn.active { background: var(--neon); color: #000; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        body { background: #0a0a0a; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #444; }
+        canvas { width: 100%; height: 100px; background: #000; border-radius: 10px; margin-bottom: 10px; border: 1px solid #00e676; }
+        .display { font-size: 2rem; color: #00e676; margin: 10px 0; font-weight: bold; }
+        .regua { height: 20px; background: #222; border-radius: 10px; margin: 10px 0; position: relative; overflow: hidden; }
+        #ponteiro { width: 4px; height: 100%; background: #00e676; position: absolute; left: 50%; transition: left 0.1s; }
+        input { width: 100%; padding: 10px; margin-bottom: 10px; background: #111; color: #fff; border: 1px solid #444; border-radius: 8px; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 10px; }
+        button { padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+        .active { background: #00e676 !important; color: #000; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 style="margin: 0 0 15px 0; letter-spacing: 2px; font-size: 1.2rem;">MAX EAR STUDIO</h2>
+    <h2>MAX EAR STUDIO</h2>
     <canvas id="visualizer"></canvas>
-    <div id="display" class="display">PRONTO</div>
-    <input type="text" id="inputCampo" placeholder="Campo Harmônico (ex: Dó,Ré,Mi)">
+    <div id="display" class="display">---</div>
+    <div class="regua"><div id="ponteiro"></div></div>
+    <input type="text" id="inputCampo" placeholder="Campo (ex: Dó,Ré,Mi,Fá,Sol,Lá,Si)">
     <div class="btn-grid">
         <button class="mode-btn" onclick="setModo('AFINADOR', this)">AFINADOR</button>
         <button class="mode-btn" onclick="setModo('ACORDES', this)">ACORDES</button>
         <button class="mode-btn" onclick="setModo('MELODIA', this)">MELODIA</button>
     </div>
-    <button id="btnRecord">INICIAR ◉</button>
-    <button id="btnStop" disabled>PARAR ■</button>
+    <button id="btnRecord" style="width:100%; background:#00e676;">INICIAR</button>
+    <button id="btnStop" style="width:100%; margin-top:5px; background:#d32f2f;">PARAR/PDF</button>
 </div>
 
 <script>
-    let audioCtx, analyser, modoAtual = 'AFINADOR', historicoEventos = [], bufferNotas = [], ultimaNotaRegistrada = null;
-    const canvas = document.getElementById('visualizer'), canvasCtx = canvas.getContext('2d');
+    let audioCtx, analyser, modoAtual = 'AFINADOR', historico = [], buffer = [];
+    const canvas = document.getElementById('visualizer'), ctx = canvas.getContext('2d');
+    const notasRef = ["Dó", "Dó#", "Ré", "Ré#", "Mi", "Fá", "Fá#", "Sol", "Sol#", "Lá", "Lá#", "Si"];
     const dicionario = { "Dó,Mi,Sol":"C", "Ré,Fá,Lá":"Dm", "Mi,Sol,Si":"Em", "Fá,Lá,Dó":"F", "Sol,Si,Ré":"G", "Lá,Dó,Mi":"Am" };
 
-    function setModo(m, btn) {
-        modoAtual = m;
-        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('display').innerText = m;
-    }
-
-    function hzParaNota(hz) {
-        const notas = ["Dó", "Dó#", "Ré", "Ré#", "Mi", "Fá", "Fá#", "Sol", "Sol#", "Lá", "Lá#", "Si"];
-        return notas[Math.round(12 * (Math.log(hz / 440) / Math.log(2)) + 57) % 12];
+    function desenharOnda() {
+        requestAnimationFrame(desenharOnda);
+        let array = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteTimeDomainData(array);
+        ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.lineWidth = 2; ctx.strokeStyle = '#00e676'; ctx.beginPath();
+        for(let i=0; i<array.length; i++) {
+            let v = array[i] / 128.0;
+            let x = (i / array.length) * canvas.width;
+            let y = v * canvas.height / 2;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.stroke();
     }
 
     async function capturar() {
-        const data = new Float32Array(2048);
+        let data = new Float32Array(2048);
         analyser.getFloatFrequencyData(data);
-        let max = -Infinity, freq = 0;
-        for(let i=0; i<data.length; i++) if(data[i] > max) { max = data[i]; freq = i * (44100/2048); }
+        let max = -Infinity, idx = 0;
+        for(let i=0; i<data.length; i++) if(data[i] > max) { max = data[i]; idx = i; }
         
         if(max > -40) {
-            let nota = hzParaNota(freq);
-            
-            if (modoAtual === 'AFINADOR') {
-                let campo = document.getElementById('inputCampo').value.split(',').map(n => n.trim());
-                let ok = campo.includes(nota);
-                document.getElementById('display').innerText = (ok ? "✓ " : "X ") + nota;
-                document.getElementById('display').style.color = ok ? "#00e676" : "#d32f2f";
-                historicoEventos.push({tipo: 'Afinacao', valor: nota, time: new Date().toLocaleTimeString()});
+            let freq = idx * (44100/2048);
+            let nIdx = Math.round(12 * (Math.log(freq / 440) / Math.log(2)) + 57) % 12;
+            let nota = notasRef[nIdx];
+
+            if(modoAtual === 'AFINADOR') {
+                document.getElementById('display').innerText = nota;
+                document.getElementById('ponteiro').style.left = (nIdx / 12 * 100) + "%";
+                historico.push({tipo:'Afinador', valor: nota, time: new Date().toLocaleTimeString()});
             } 
-            else if (modoAtual === 'ACORDES') {
-                bufferNotas.push(nota);
-                if(bufferNotas.length >= 20) {
-                    let uniq = [...new Set(bufferNotas)].sort().join(",");
-                    let acorde = dicionario[uniq] || "---";
-                    document.getElementById('display').innerText = "Acorde: " + acorde;
-                    if(acorde !== "---") historicoEventos.push({tipo: 'Acorde', valor: acorde, time: new Date().toLocaleTimeString()});
-                    bufferNotas = [];
+            else if(modoAtual === 'ACORDES') {
+                buffer.push(nota);
+                if(buffer.length > 30) {
+                    let acorde = dicionario[[...new Set(buffer)].sort().join(",")] || "Tocando...";
+                    document.getElementById('display').innerText = acorde;
+                    if(acorde !== "Tocando...") historico.push({tipo:'Acorde', valor: acorde, time: new Date().toLocaleTimeString()});
+                    buffer = [];
                 }
-            } 
-            else if (modoAtual === 'MELODIA') {
-                if(nota !== ultimaNotaRegistrada) {
-                    document.getElementById('display').innerText = "Nota: " + nota;
-                    historicoEventos.push({tipo: 'Melodia', valor: nota, time: new Date().toLocaleTimeString()});
-                    ultimaNotaRegistrada = nota;
+            }
+            else if(modoAtual === 'MELODIA') {
+                if(nota !== buffer[buffer.length-1]) {
+                    document.getElementById('display').innerText = nota;
+                    historico.push({tipo:'Melodia', valor: nota, time: new Date().toLocaleTimeString()});
                 }
+                buffer.push(nota);
             }
         }
         if(!document.getElementById('btnStop').disabled) requestAnimationFrame(capturar);
     }
 
+    function setModo(m, btn) {
+        modoAtual = m;
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        buffer = [];
+    }
+
     document.getElementById('btnRecord').onclick = async () => {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({audio:true});
         audioCtx = new AudioContext(); analyser = audioCtx.createAnalyser();
         audioCtx.createMediaStreamSource(stream).connect(analyser);
-        document.getElementById('btnRecord').disabled = true; document.getElementById('btnStop').disabled = false;
-        capturar();
+        desenharOnda(); capturar();
+        document.getElementById('btnStop').disabled = false;
     };
 
     document.getElementById('btnStop').onclick = () => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        doc.text("Relatorio Max Ear Studio", 20, 20);
-        historicoEventos.forEach((h, i) => doc.text(`${i+1}. ${h.tipo}: ${h.valor} às ${h.time}`, 20, 40 + (i*10)));
-        doc.save("Relatorio_Musical.pdf");
+        historico.forEach((h,i) => doc.text(`${i+1}. ${h.tipo}: ${h.valor}`, 20, 20+(i*10)));
+        doc.save("Relatorio.pdf");
         location.reload();
     };
 </script>
