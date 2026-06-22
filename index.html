@@ -3,33 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Max Ear Studio Pro</title>
+    <title>Max Ear Studio</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * { touch-action: manipulation; box-sizing: border-box; }
         body { background: #050505; color: #fff; font-family: sans-serif; margin: 0; height: 100vh; overflow: hidden; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 400px; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-        canvas { width: 100%; height: 100px; background: #000; border: 1px solid #444; border-radius: 8px; }
+        .container { width: 100%; max-width: 400px; height: 100%; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        
+        canvas { width: 100%; height: 100px; background: #000; border: 1px solid #333; border-radius: 8px; }
+        
         .display-area { background: #151515; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #00e676; }
-        .display { font-size: 2rem; color: #00e676; font-weight: bold; }
+        .display { font-size: 1.8rem; color: #00e676; font-weight: bold; }
+        
+        /* Grid dos 3 modos */
         .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-        button { padding: 12px; border-radius: 6px; border: none; font-weight: 600; background: #222; color: #fff; cursor: pointer; font-size: 0.8rem; }
+        button { padding: 12px 5px; border-radius: 6px; border: none; font-weight: 600; background: #222; color: #fff; cursor: pointer; font-size: 0.75rem; }
         button.active { background: #00e676; color: #000; }
+        
+        /* Botões de controle fixos no rodapé */
         .footer { display: flex; gap: 8px; margin-top: auto; }
-        #btnRecord { flex: 2; background: #00e676; color: #000; padding: 15px; }
-        #btnStop { flex: 1; background: #d32f2f; color: #fff; padding: 15px; }
+        #btnRecord { flex: 2; background: #00e676; color: #000; padding: 15px; font-weight: bold; }
+        #btnStop { flex: 1; background: #d32f2f; color: #fff; padding: 15px; font-weight: bold; }
+        button:disabled { opacity: 0.3; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <div style="text-align: center; font-size: 0.7rem; color: #666; letter-spacing: 1px;">MAX EAR STUDIO</div>
     <canvas id="visualizer"></canvas>
-    <div class="display-area"><div id="display" class="display">PRONTO</div></div>
+    
+    <div class="display-area">
+        <div id="display" class="display">PRONTO</div>
+    </div>
+
     <div class="grid">
         <button class="mode-btn" onclick="setModo('AFINADOR', this)">AFINADOR</button>
         <button class="mode-btn" onclick="setModo('ACORDES', this)">ACORDES</button>
         <button class="mode-btn" onclick="setModo('MELODIA', this)">MELODIA</button>
     </div>
+
     <div class="footer">
         <button id="btnRecord">INICIAR</button>
         <button id="btnStop" disabled>EXPORTAR</button>
@@ -38,7 +51,6 @@
 
 <script>
     let audioCtx, analyser, modo = 'AFINADOR', historico = [];
-    let ultimaDetecao = "", contadorEstabilidade = 0;
     const canvas = document.getElementById('visualizer'), ctx = canvas.getContext('2d');
     const notasRef = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
@@ -73,33 +85,15 @@
         }
         ctx.stroke();
 
-        if (modo === 'ACORDES') {
-            let picos = [];
-            for(let i=0; i<buffer.length; i++) {
-                if(buffer[i] > -30) {
-                    let freq = i * (audioCtx.sampleRate / 2048);
-                    let n = Math.round(12 * (Math.log(freq / 440) / Math.log(2)) + 69);
-                    picos.push(notasRef[n % 12]);
-                }
-            }
-            let unique = [...new Set(picos)];
-            let res = "---";
-            if(unique.includes("G") && unique.includes("D")) res = "G";
-            else if(unique.includes("C") && unique.includes("E")) res = "C";
-            else if(unique.includes("D") && unique.includes("A")) res = "D";
-            else if(unique.includes("E") && unique.includes("B")) res = "Em";
-
-            if (res !== "---" && res === ultimaDetecao) {
-                if(contadorEstabilidade++ > 10) {
-                    document.getElementById('display').innerText = res;
-                    historico.push({tipo: 'Acorde', valor: res, time: new Date().toLocaleTimeString()});
-                }
-            } else { ultimaDetecao = res; contadorEstabilidade = 0; }
-        } else {
-            let maxIdx = buffer.indexOf(Math.max(...buffer));
-            let freq = maxIdx * (audioCtx.sampleRate / 2048);
-            let n = Math.round(12 * (Math.log(freq / 440) / Math.log(2)) + 69);
-            document.getElementById('display').innerText = notasRef[n % 12];
+        // Identificação
+        let maxIdx = buffer.indexOf(Math.max(...buffer));
+        let freq = maxIdx * (audioCtx.sampleRate / 2048);
+        let n = Math.round(12 * (Math.log(freq / 440) / Math.log(2)) + 69);
+        let nota = notasRef[n % 12];
+        
+        if (freq > 50) {
+            document.getElementById('display').innerText = modo + ": " + nota;
+            historico.push({tipo: modo, valor: nota, time: new Date().toLocaleTimeString()});
         }
         requestAnimationFrame(loop);
     }
@@ -109,7 +103,7 @@
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         doc.text("Relatorio Max Ear Studio", 10, 10);
-        historico.forEach((h, i) => doc.text(`${i+1}. ${h.tipo}: ${h.valor} - ${h.time}`, 10, 20+(i*10)));
+        historico.forEach((h, i) => { if(i < 30) doc.text(`${i+1}. ${h.tipo}: ${h.valor} - ${h.time}`, 10, 20+(i*10)); });
         doc.save("Relatorio.pdf");
         location.reload();
     };
