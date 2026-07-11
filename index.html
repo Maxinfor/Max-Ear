@@ -30,7 +30,7 @@
             width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             overflow-y: auto;
             padding-bottom: 4px;
         }
@@ -40,7 +40,7 @@
             background: #000;
             border-radius: 14px;
             border: 1px solid #1a1a2a;
-            height: 70px;
+            height: 60px;
             overflow: hidden;
             position: relative;
         }
@@ -54,11 +54,11 @@
         .display-area {
             background: #12121a;
             border-radius: 14px;
-            padding: 14px 18px;
+            padding: 12px 16px;
             text-align: center;
             border: 1px solid #1a1a2a;
             transition: all 0.3s ease;
-            min-height: 100px;
+            min-height: 90px;
         }
         .display-area.recording {
             border-color: #00e676;
@@ -68,9 +68,13 @@
             border-color: #ffa726;
             box-shadow: 0 0 30px rgba(255,167,38,0.05);
         }
+        .display-area.music {
+            border-color: #7c4dff;
+            box-shadow: 0 0 30px rgba(124,77,255,0.05);
+        }
         
         .mode-label {
-            font-size: 0.55rem;
+            font-size: 0.5rem;
             color: #666;
             text-transform: uppercase;
             letter-spacing: 2px;
@@ -79,10 +83,10 @@
         
         .status-dot {
             display: inline-block;
-            width: 7px;
-            height: 7px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
-            margin-right: 5px;
+            margin-right: 4px;
             vertical-align: middle;
         }
         .status-dot.idle { background: #444; }
@@ -92,6 +96,7 @@
         }
         .status-dot.detected { background: #00e676; }
         .status-dot.exercise { background: #ffa726; }
+        .status-dot.music { background: #7c4dff; }
         
         @keyframes blink {
             0%, 100% { opacity: 1; }
@@ -99,10 +104,10 @@
         }
         
         .display {
-            font-size: 3rem;
+            font-size: 2.8rem;
             font-weight: 700;
             font-family: 'Courier New', monospace;
-            min-height: 48px;
+            min-height: 42px;
             transition: color 0.2s ease;
         }
         .display.in-tune { color: #00e676; }
@@ -110,21 +115,22 @@
         .display.close { color: #ffa726; }
         .display.idle { color: #444; }
         .display.exercise { color: #ffa726; }
+        .display.music { color: #7c4dff; }
         
         .display-sub {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #666;
-            min-height: 18px;
+            min-height: 16px;
             margin-top: 2px;
         }
         
         /* Indicador de afinação */
         .tuner-container {
-            margin-top: 6px;
+            margin-top: 4px;
             padding: 0 10px;
         }
         .tuner-bar-bg {
-            height: 3px;
+            height: 2px;
             background: #1a1a2a;
             border-radius: 4px;
             overflow: hidden;
@@ -142,7 +148,7 @@
             left: 50%;
             top: -2px;
             width: 2px;
-            height: 7px;
+            height: 6px;
             background: #fff;
             transform: translateX(-50%);
             border-radius: 2px;
@@ -151,24 +157,24 @@
         /* Escalas - Notas em destaque */
         .scale-display {
             display: none;
-            gap: 4px;
+            gap: 3px;
             justify-content: center;
             flex-wrap: wrap;
-            margin-top: 6px;
-            padding: 6px;
+            margin-top: 4px;
+            padding: 4px;
             background: #0a0a0f;
-            border-radius: 10px;
+            border-radius: 8px;
             border: 1px solid #1a1a2a;
         }
         .scale-display.active {
             display: flex;
         }
         .scale-note {
-            padding: 4px 10px;
-            border-radius: 8px;
+            padding: 3px 8px;
+            border-radius: 6px;
             background: #1a1a2a;
             color: #444;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 600;
             transition: all 0.3s ease;
             border: 1px solid transparent;
@@ -195,21 +201,26 @@
             border-color: #ffa726;
             box-shadow: 0 0 20px rgba(255,167,38,0.15);
         }
+        .scale-note.played {
+            background: #7c4dff;
+            color: #fff;
+            border-color: #7c4dff;
+        }
         
         /* Botões de Modo */
         .modes-grid {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 6px;
+            gap: 5px;
         }
         .modes-grid button {
-            padding: 8px 6px;
+            padding: 6px 4px;
             border-radius: 10px;
             border: 1px solid #1a1a2a;
             background: #12121a;
             color: #666;
             font-weight: 600;
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             cursor: pointer;
             transition: all 0.2s ease;
             font-family: inherit;
@@ -222,16 +233,16 @@
         }
         .modes-grid button .icon {
             display: block;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             margin-bottom: 1px;
         }
         
         /* Exercícios */
         .exercise-controls {
             display: none;
-            gap: 6px;
+            gap: 4px;
             flex-wrap: wrap;
-            padding: 6px;
+            padding: 4px;
             background: #0a0a0f;
             border-radius: 10px;
             border: 1px solid #1a1a2a;
@@ -241,25 +252,25 @@
         }
         .exercise-controls select {
             flex: 1;
-            padding: 6px 10px;
+            padding: 5px 8px;
             border-radius: 8px;
             border: 1px solid #1a1a2a;
             background: #12121a;
             color: #fff;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-family: inherit;
-            min-width: 120px;
+            min-width: 100px;
         }
         .exercise-controls select:focus {
             outline: none;
             border-color: #ffa726;
         }
         .exercise-controls button {
-            padding: 6px 14px;
+            padding: 5px 12px;
             border-radius: 8px;
             border: none;
             font-weight: 700;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             cursor: pointer;
             transition: all 0.2s ease;
             font-family: inherit;
@@ -283,13 +294,21 @@
             opacity: 0.3;
             cursor: not-allowed;
         }
+        .btn-stop-exercise {
+            background: #ff1744;
+            color: #fff;
+            display: none;
+        }
+        .btn-stop-exercise.active {
+            display: inline-block;
+        }
         
         /* Música */
         .music-controls {
             display: none;
-            gap: 6px;
+            gap: 4px;
             flex-wrap: wrap;
-            padding: 6px;
+            padding: 4px;
             background: #0a0a0f;
             border-radius: 10px;
             border: 1px solid #1a1a2a;
@@ -299,32 +318,32 @@
         }
         .music-controls textarea {
             width: 100%;
-            padding: 8px 10px;
+            padding: 6px 8px;
             border-radius: 8px;
             border: 1px solid #1a1a2a;
             background: #12121a;
             color: #fff;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-family: monospace;
             resize: vertical;
-            min-height: 60px;
+            min-height: 50px;
         }
         .music-controls textarea:focus {
             outline: none;
-            border-color: #00e676;
+            border-color: #7c4dff;
         }
         .music-controls .btn-group {
             display: flex;
-            gap: 6px;
+            gap: 4px;
             width: 100%;
         }
         .music-controls button {
             flex: 1;
-            padding: 6px 12px;
+            padding: 5px 10px;
             border-radius: 8px;
             border: none;
             font-weight: 700;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             cursor: pointer;
             transition: all 0.2s ease;
             font-family: inherit;
@@ -333,16 +352,24 @@
             transform: scale(0.95);
         }
         .btn-load-music {
-            background: #00e676;
-            color: #000;
+            background: #7c4dff;
+            color: #fff;
         }
         .btn-start-music {
-            background: #ffa726;
+            background: #00e676;
             color: #000;
         }
         .btn-start-music:disabled {
             opacity: 0.3;
             cursor: not-allowed;
+        }
+        .btn-stop-music {
+            background: #ff1744;
+            color: #fff;
+            display: none;
+        }
+        .btn-stop-music.active {
+            display: inline-block;
         }
         
         /* Histórico */
@@ -350,26 +377,26 @@
             background: #0a0a0f;
             border-radius: 10px;
             border: 1px solid #1a1a2a;
-            padding: 4px 8px;
-            min-height: 30px;
+            padding: 3px 6px;
+            min-height: 26px;
             display: flex;
             flex-wrap: wrap;
             gap: 3px;
             align-items: center;
             overflow-y: auto;
-            max-height: 38px;
+            max-height: 32px;
         }
         .history-empty {
             color: #444;
-            font-size: 0.55rem;
+            font-size: 0.5rem;
             width: 100%;
             text-align: center;
         }
         .history-item {
             background: #12121a;
-            padding: 1px 8px;
-            border-radius: 10px;
-            font-size: 0.55rem;
+            padding: 1px 6px;
+            border-radius: 8px;
+            font-size: 0.5rem;
             color: #888;
             border: 1px solid #1a1a2a;
             white-space: nowrap;
@@ -382,22 +409,46 @@
             color: #ff1744;
             border-color: #ff1744;
         }
+        .history-item.music {
+            color: #7c4dff;
+            border-color: #7c4dff;
+        }
+        
+        /* Progresso da música */
+        .music-progress {
+            display: none;
+            width: 100%;
+            height: 2px;
+            background: #1a1a2a;
+            border-radius: 2px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+        .music-progress.active {
+            display: block;
+        }
+        .music-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #7c4dff;
+            transition: width 0.3s ease;
+        }
         
         /* Footer */
         .footer {
             display: flex;
-            gap: 6px;
-            padding: 6px 0 2px;
+            gap: 5px;
+            padding: 4px 0 2px;
             max-width: 520px;
             margin: 0 auto;
             width: 100%;
         }
         .footer button {
-            padding: 10px 14px;
+            padding: 8px 12px;
             border: none;
             border-radius: 10px;
             font-weight: 700;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             cursor: pointer;
             transition: all 0.2s ease;
             font-family: inherit;
@@ -442,10 +493,10 @@
         ::-webkit-scrollbar-thumb { background: #1a1a2a; border-radius: 10px; }
         
         @media (max-width: 400px) {
-            .display { font-size: 2.4rem; }
-            .modes-grid button { padding: 5px 3px; font-size: 0.55rem; }
-            .modes-grid button .icon { font-size: 1rem; }
-            .footer button { font-size: 0.65rem; padding: 8px 10px; }
+            .display { font-size: 2.2rem; }
+            .modes-grid button { padding: 4px 2px; font-size: 0.5rem; }
+            .modes-grid button .icon { font-size: 0.9rem; }
+            .footer button { font-size: 0.6rem; padding: 6px 8px; }
         }
     </style>
 </head>
@@ -468,6 +519,11 @@
         
         <!-- Escala Display -->
         <div class="scale-display" id="scaleDisplay"></div>
+        
+        <!-- Progresso Música -->
+        <div class="music-progress" id="musicProgress">
+            <div class="music-progress-bar" id="musicProgressBar"></div>
+        </div>
         
         <div class="tuner-container">
             <div class="tuner-bar-bg">
@@ -505,14 +561,16 @@
         </select>
         <button class="btn-play-exercise" id="btnPlayExercise" onclick="playExercise()">▶ Tocar</button>
         <button class="btn-start-exercise" id="btnStartExercise" onclick="startExercise()">🎯 Iniciar</button>
+        <button class="btn-stop-exercise" id="btnStopExercise" onclick="stopExercise()">⏹ Parar</button>
     </div>
     
     <!-- Música -->
     <div class="music-controls" id="musicControls">
-        <textarea id="musicInput" placeholder="Cole a música com cifras aqui...&#10;Ex:&#10; [C] Meu [G] bem querer&#10; [Am] Quero te [F] ver"></textarea>
+        <textarea id="musicInput" placeholder="Cole a música com cifras aqui...&#10;Ex:&#10;[C] Meu [G] bem querer&#10;[Am] Quero te [F] ver"></textarea>
         <div class="btn-group">
             <button class="btn-load-music" onclick="loadMusic()">📥 Carregar</button>
             <button class="btn-start-music" id="btnStartMusic" onclick="startMusic()" disabled>🎤 Começar</button>
+            <button class="btn-stop-music" id="btnStopMusic" onclick="stopMusic()">⏹ Parar</button>
         </div>
     </div>
     
@@ -596,6 +654,9 @@
     let exercicioTotalNotas = 0;
     let isPlayingExercise = false;
     let playInterval = null;
+    let pianoCtx = null;
+    let pianoGain = null;
+    let notasTocadas = [];
     
     // Música
     let musicaAtual = [];
@@ -603,6 +664,151 @@
     let musicaAtiva = false;
     let musicaErros = 0;
     let musicaAcertos = 0;
+    let musicaTocadas = [];
+    
+    // ============================================================
+    //  PIANO - SINTETIZADOR REALISTA
+    // ============================================================
+    function initPiano() {
+        try {
+            pianoCtx = new (window.AudioContext || window.webkitAudioContext)();
+            pianoGain = pianoCtx.createGain();
+            pianoGain.gain.value = 0.15;
+            pianoGain.connect(pianoCtx.destination);
+        } catch (e) {
+            console.log('Erro ao iniciar piano:', e);
+        }
+    }
+    
+    function playPianoNote(freq, duration = 0.8, velocity = 0.7) {
+        if (!pianoCtx || pianoCtx.state === 'closed') {
+            initPiano();
+            if (!pianoCtx) return;
+        }
+        
+        try {
+            const now = pianoCtx.currentTime;
+            
+            // Oscilador principal - onda senoidal com harmônicos
+            const osc = pianoCtx.createOscillator();
+            const gain = pianoCtx.createGain();
+            const gain2 = pianoCtx.createGain();
+            const gain3 = pianoCtx.createGain();
+            
+            // Harmônicos para som mais rico
+            const osc2 = pianoCtx.createOscillator();
+            const osc3 = pianoCtx.createOscillator();
+            
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            
+            osc2.type = 'sine';
+            osc2.frequency.value = freq * 2;
+            osc2.detune.value = -2;
+            
+            osc3.type = 'sine';
+            osc3.frequency.value = freq * 3;
+            osc3.detune.value = 3;
+            
+            // Envelope de amplitude (ataque e decaimento realista)
+            const envelope = pianoCtx.createGain();
+            envelope.gain.setValueAtTime(0, now);
+            envelope.gain.linearRampToValueAtTime(velocity * 0.8, now + 0.01);
+            envelope.gain.linearRampToValueAtTime(velocity * 0.6, now + 0.05);
+            envelope.gain.exponentialRampToValueAtTime(velocity * 0.1, now + duration);
+            
+            // Conectar
+            osc.connect(gain);
+            osc2.connect(gain2);
+            osc3.connect(gain3);
+            
+            gain.connect(envelope);
+            gain2.connect(envelope);
+            gain3.connect(envelope);
+            
+            envelope.connect(pianoGain);
+            
+            // Iniciar
+            osc.start(now);
+            osc2.start(now);
+            osc3.start(now);
+            
+            osc.stop(now + duration + 0.1);
+            osc2.stop(now + duration + 0.1);
+            osc3.stop(now + duration + 0.1);
+            
+            // Ataque com ruído (simula corda do piano)
+            if (velocity > 0.3) {
+                const noise = pianoCtx.createBufferSource();
+                const bufferSize = pianoCtx.sampleRate * 0.02;
+                const buffer = pianoCtx.createBuffer(1, bufferSize, pianoCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+                }
+                noise.buffer = buffer;
+                const noiseGain = pianoCtx.createGain();
+                noiseGain.gain.value = velocity * 0.08;
+                noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                noise.connect(noiseGain);
+                noiseGain.connect(pianoGain);
+                noise.start(now);
+                noise.stop(now + 0.05);
+            }
+            
+            // Liberar recursos
+            setTimeout(() => {
+                try {
+                    envelope.disconnect();
+                    gain.disconnect();
+                    gain2.disconnect();
+                    gain3.disconnect();
+                } catch (e) {}
+            }, (duration + 0.1) * 1000);
+            
+        } catch (e) {
+            // Fallback: som simples se falhar
+            try {
+                const osc = pianoCtx.createOscillator();
+                const gain = pianoCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.1, pianoCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, pianoCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(pianoCtx.destination);
+                osc.start();
+                osc.stop(pianoCtx.currentTime + duration);
+            } catch (e2) {}
+        }
+    }
+    
+    function playScaleNotes(notas, velocidade = 0.6) {
+        let delay = 0;
+        notas.forEach((nota, i) => {
+            const freq = getNoteFreq(nota);
+            if (freq > 0) {
+                setTimeout(() => {
+                    playPianoNote(freq, velocidade, 0.7);
+                    
+                    // Destacar nota na escala
+                    const scaleNotes = document.querySelectorAll('.scale-note');
+                    if (scaleNotes[i]) {
+                        scaleNotes.forEach(el => el.classList.remove('played'));
+                        scaleNotes[i].classList.add('played');
+                    }
+                }, delay);
+                delay += velocidade * 1000;
+            }
+        });
+        
+        // Resetar destaque após terminar
+        setTimeout(() => {
+            document.querySelectorAll('.scale-note').forEach(el => el.classList.remove('played'));
+        }, delay + 500);
+        
+        return delay;
+    }
     
     // ============================================================
     //  INICIALIZAÇÃO DO CANVAS
@@ -654,9 +860,9 @@
         ctx.stroke();
         
         ctx.strokeStyle = '#00e676';
-        ctx.lineWidth = 2;
-        ctx.shadowColor = 'rgba(0,230,118,0.15)';
-        ctx.shadowBlur = 8;
+        ctx.lineWidth = 1.5;
+        ctx.shadowColor = 'rgba(0,230,118,0.1)';
+        ctx.shadowBlur = 6;
         ctx.beginPath();
         
         const step = Math.max(1, Math.floor(dataArray.length / w));
@@ -801,7 +1007,6 @@
                     const notaEsperada = escalaAtual.notas[indiceEscala];
                     const isCorrect = nota === notaEsperada;
                     
-                    // Atualiza display
                     displayText = nota;
                     displayClass = isCorrect ? 'display in-tune' : 'display wrong';
                     subText = isCorrect ? `✅ Nota certa! (${indiceEscala + 1}/${escalaAtual.notas.length})` : 
@@ -809,7 +1014,6 @@
                     
                     if (isCorrect) {
                         exercicioNotasAcertadas++;
-                        // Marca nota como correta na escala
                         const scaleNotes = document.querySelectorAll('.scale-note');
                         if (scaleNotes[indiceEscala]) {
                             scaleNotes[indiceEscala].classList.remove('current-target', 'wrong');
@@ -817,7 +1021,6 @@
                         }
                         indiceEscala++;
                         
-                        // Verifica se terminou
                         if (indiceEscala >= escalaAtual.notas.length) {
                             const percentual = Math.round((exercicioNotasAcertadas / exercicioTotalNotas) * 100);
                             subText = `🎉 Exercício concluído! Acertos: ${exercicioNotasAcertadas}/${exercicioTotalNotas} (${percentual}%)`;
@@ -825,10 +1028,10 @@
                             exercicioAtivo = false;
                             document.getElementById('btnStartExercise').disabled = false;
                             document.getElementById('btnStartExercise').textContent = '🔄 Refazer';
+                            document.getElementById('btnStopExercise').classList.remove('active');
                             document.getElementById('displayArea').className = 'display-area idle';
                             statusDot.className = 'status-dot idle';
                             
-                            // Adiciona ao histórico
                             historico.push({
                                 nota: 'EXERCÍCIO',
                                 modo: 'EXERCÍCIO',
@@ -837,14 +1040,18 @@
                             });
                             updateHistory();
                         } else {
-                            // Destaca próxima nota
                             const scaleNotes = document.querySelectorAll('.scale-note');
                             if (scaleNotes[indiceEscala]) {
                                 scaleNotes[indiceEscala].classList.add('current-target');
                             }
+                            // Toca a próxima nota como referência
+                            const proxNota = escalaAtual.notas[indiceEscala];
+                            const freqProx = getNoteFreq(proxNota);
+                            if (freqProx > 0) {
+                                setTimeout(() => playPianoNote(freqProx, 0.5, 0.5), 300);
+                            }
                         }
                     } else {
-                        // Nota errada
                         const scaleNotes = document.querySelectorAll('.scale-note');
                         if (scaleNotes[indiceEscala]) {
                             scaleNotes[indiceEscala].classList.add('wrong');
@@ -860,7 +1067,6 @@
                     statusDot.className = 'status-dot ' + (isCorrect ? 'detected' : 'recording');
                     document.getElementById('modeText').textContent = `EXERCÍCIO ${indiceEscala + 1}/${escalaAtual.notas.length}`;
                     
-                    // Histórico do exercício
                     historico.push({
                         nota: nota,
                         modo: 'EXERCÍCIO',
@@ -897,10 +1103,12 @@
                         statusDot.className = 'status-dot ' + (isCorrect ? 'detected' : 'recording');
                         document.getElementById('modeText').textContent = `MÚSICA ${musicaIndex + 1}/${musicaAtual.length}`;
                         
-                        // Próxima nota
+                        // Atualiza barra de progresso
+                        const progress = ((musicaIndex + 1) / musicaAtual.length) * 100;
+                        document.getElementById('musicProgressBar').style.width = progress + '%';
+                        
                         musicaIndex++;
                         
-                        // Verifica se terminou
                         if (musicaIndex >= musicaAtual.length) {
                             const percentual = Math.round((musicaAcertos / (musicaAcertos + musicaErros)) * 100);
                             subText = `🎤 Música concluída! Acertos: ${musicaAcertos}, Erros: ${musicaErros} (${percentual}%)`;
@@ -908,8 +1116,10 @@
                             musicaAtiva = false;
                             document.getElementById('btnStartMusic').disabled = false;
                             document.getElementById('btnStartMusic').textContent = '🔄 Refazer';
+                            document.getElementById('btnStopMusic').classList.remove('active');
                             document.getElementById('displayArea').className = 'display-area idle';
                             statusDot.className = 'status-dot idle';
+                            document.getElementById('musicProgress').classList.remove('active');
                             
                             historico.push({
                                 nota: 'MÚSICA',
@@ -918,10 +1128,18 @@
                                 tempo: new Date().toLocaleTimeString()
                             });
                             updateHistory();
+                        } else {
+                            // Toca próxima nota como referência
+                            const proxItem = musicaAtual[musicaIndex];
+                            if (proxItem.chord) {
+                                const freqProx = getNoteFreq(proxItem.chord);
+                                if (freqProx > 0) {
+                                    setTimeout(() => playPianoNote(freqProx, 0.4, 0.4), 400);
+                                }
+                            }
                         }
                     }
                 } else {
-                    // Modo normal
                     display.className = 'display idle';
                     display.textContent = '---';
                     sub.textContent = 'Aguardando...';
@@ -986,6 +1204,7 @@
             document.getElementById('statusDot').className = 'status-dot recording';
             document.getElementById('modeText').textContent = 'ESCUTANDO...';
             
+            initPiano();
             processAudio();
             
         } catch (err) {
@@ -1031,6 +1250,9 @@
         }
         exercicioAtivo = false;
         musicaAtiva = false;
+        document.getElementById('musicProgress').classList.remove('active');
+        document.getElementById('btnStopExercise').classList.remove('active');
+        document.getElementById('btnStopMusic').classList.remove('active');
     }
     
     // ============================================================
@@ -1057,16 +1279,19 @@
         document.getElementById('exerciseControls').className = 'exercise-controls' + (m === 'EXERCICIO' ? ' active' : '');
         document.getElementById('musicControls').className = 'music-controls' + (m === 'MUSICA' ? ' active' : '');
         document.getElementById('scaleDisplay').className = 'scale-display' + (m === 'EXERCICIO' ? ' active' : '');
+        document.getElementById('musicProgress').classList.remove('active');
         
         if (m === 'EXERCICIO') {
             document.getElementById('btnStartExercise').disabled = false;
             document.getElementById('btnStartExercise').textContent = '🎯 Iniciar';
+            document.getElementById('btnStopExercise').classList.remove('active');
             document.getElementById('scaleDisplay').innerHTML = '';
         }
         
         if (m === 'MUSICA') {
             document.getElementById('btnStartMusic').disabled = true;
             document.getElementById('btnStartMusic').textContent = '🎤 Começar';
+            document.getElementById('btnStopMusic').classList.remove('active');
         }
         
         updateHistory();
@@ -1097,6 +1322,7 @@
             isPlayingExercise = false;
             btn.textContent = '▶ Tocar';
             btn.classList.remove('playing');
+            document.querySelectorAll('.scale-note').forEach(el => el.classList.remove('played'));
             return;
         }
         
@@ -1104,61 +1330,24 @@
         btn.textContent = '⏹ Parar';
         btn.classList.add('playing');
         
-        let idx = 0;
-        const notas = escala.notas;
+        // Mostrar a escala
+        const scaleDisplay = document.getElementById('scaleDisplay');
+        scaleDisplay.innerHTML = '';
+        escala.notas.forEach((nota) => {
+            const div = document.createElement('div');
+            div.className = 'scale-note';
+            div.textContent = nota;
+            scaleDisplay.appendChild(div);
+        });
         
-        // Tocar as notas em sequência
-        playInterval = setInterval(() => {
-            if (idx >= notas.length) {
-                clearInterval(playInterval);
-                playInterval = null;
-                isPlayingExercise = false;
-                btn.textContent = '▶ Tocar';
-                btn.classList.remove('playing');
-                return;
-            }
-            
-            const nota = notas[idx];
-            const freq = getNoteFreq(nota);
-            if (freq > 0) {
-                // Tocar a nota (usando Web Audio)
-                playTone(freq);
-                
-                // Destacar na escala
-                const scaleNotes = document.querySelectorAll('.scale-note');
-                scaleNotes.forEach((el, i) => {
-                    el.classList.remove('current-target');
-                    if (i === idx) el.classList.add('current-target');
-                });
-                
-                // Atualizar display
-                document.getElementById('display').textContent = nota;
-                document.getElementById('display').className = 'display exercise';
-                document.getElementById('displaySub').textContent = `🎵 ${nota} (${Math.round(freq)} Hz)`;
-            }
-            
-            idx++;
-        }, 600);
-    }
-    
-    function playTone(freq) {
-        try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.value = freq;
-            gain.gain.value = 0.15;
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start();
-            setTimeout(() => {
-                osc.stop();
-                ctx.close();
-            }, 500);
-        } catch (e) {
-            // Silencia erros de áudio
-        }
+        // Tocar todas as notas com piano
+        const totalDuration = playScaleNotes(escala.notas, 0.5);
+        
+        setTimeout(() => {
+            isPlayingExercise = false;
+            btn.textContent = '▶ Tocar';
+            btn.classList.remove('playing');
+        }, totalDuration + 500);
     }
     
     function startExercise() {
@@ -1186,6 +1375,7 @@
         
         document.getElementById('btnStartExercise').disabled = true;
         document.getElementById('btnStartExercise').textContent = '⏳ Executando...';
+        document.getElementById('btnStopExercise').classList.add('active');
         document.getElementById('displayArea').className = 'display-area exercise';
         document.getElementById('display').textContent = '🎯';
         document.getElementById('display').className = 'display exercise';
@@ -1197,8 +1387,30 @@
         setTimeout(() => {
             const primeiraNota = escala.notas[0];
             const freq = getNoteFreq(primeiraNota);
-            if (freq > 0) playTone(freq);
+            if (freq > 0) playPianoNote(freq, 0.8, 0.6);
         }, 500);
+    }
+    
+    function stopExercise() {
+        exercicioAtivo = false;
+        document.getElementById('btnStartExercise').disabled = false;
+        document.getElementById('btnStartExercise').textContent = '🎯 Iniciar';
+        document.getElementById('btnStopExercise').classList.remove('active');
+        document.getElementById('displayArea').className = 'display-area idle';
+        document.getElementById('statusDot').className = 'status-dot idle';
+        document.getElementById('modeText').textContent = 'EXERCÍCIO';
+        document.getElementById('display').textContent = '⏹';
+        document.getElementById('display').className = 'display idle';
+        document.getElementById('displaySub').textContent = 'Exercício interrompido';
+        
+        if (playInterval) {
+            clearInterval(playInterval);
+            playInterval = null;
+        }
+        
+        document.querySelectorAll('.scale-note').forEach(el => {
+            el.classList.remove('correct', 'wrong', 'current-target', 'active');
+        });
     }
     
     // ============================================================
@@ -1217,16 +1429,13 @@
         musicaAtual = [];
         
         lines.forEach(line => {
-            // Detecta cifras entre colchetes [C]
             const parts = line.split(/(\[[^\]]+\])/);
             let currentChord = null;
             
             parts.forEach(part => {
                 if (part.match(/^\[.+\]$/)) {
-                    // É uma cifra
                     currentChord = part.replace(/[\[\]]/g, '');
                 } else if (part.trim()) {
-                    // É texto - associa a cifra atual
                     const words = part.trim().split(/\s+/);
                     words.forEach(word => {
                         if (word) {
@@ -1252,15 +1461,18 @@
         document.getElementById('btnStartMusic').textContent = '🎤 Começar';
         document.getElementById('displaySub').textContent = `📥 ${musicaAtual.length} palavras carregadas`;
         input.placeholder = `✅ ${musicaAtual.length} palavras carregadas!`;
+        document.getElementById('musicProgressBar').style.width = '0%';
         
         // Mostra preview
         let preview = '';
-        musicaAtual.forEach(item => {
+        musicaAtual.slice(0, 10).forEach(item => {
             if (item.chord) preview += `[${item.chord}] `;
             preview += `${item.word} `;
         });
+        if (musicaAtual.length > 10) preview += '...';
         document.getElementById('display').textContent = '📝';
-        document.getElementById('display').className = 'display idle';
+        document.getElementById('display').className = 'display music';
+        document.getElementById('displaySub').textContent = preview;
     }
     
     function startMusic() {
@@ -1273,23 +1485,47 @@
         musicaIndex = 0;
         musicaAcertos = 0;
         musicaErros = 0;
+        musicaTocadas = [];
         
         document.getElementById('btnStartMusic').disabled = true;
         document.getElementById('btnStartMusic').textContent = '🎤 Cantando...';
-        document.getElementById('displayArea').className = 'display-area recording';
-        document.getElementById('statusDot').className = 'status-dot recording';
+        document.getElementById('btnStopMusic').classList.add('active');
+        document.getElementById('displayArea').className = 'display-area music';
+        document.getElementById('statusDot').className = 'status-dot music';
         document.getElementById('modeText').textContent = 'CANTANDO...';
         document.getElementById('display').textContent = '🎤';
+        document.getElementById('display').className = 'display music';
         document.getElementById('displaySub').textContent = `Vamos começar! (1/${musicaAtual.length})`;
+        document.getElementById('musicProgress').classList.add('active');
+        document.getElementById('musicProgressBar').style.width = '0%';
         
         // Mostra primeira nota
         const primeira = musicaAtual[0];
         if (primeira.chord) {
             setTimeout(() => {
                 const freq = getNoteFreq(primeira.chord);
-                if (freq > 0) playTone(freq);
+                if (freq > 0) playPianoNote(freq, 0.6, 0.5);
                 document.getElementById('displaySub').textContent = `🎵 Cante: ${primeira.chord}`;
             }, 500);
+        }
+    }
+    
+    function stopMusic() {
+        musicaAtiva = false;
+        document.getElementById('btnStartMusic').disabled = false;
+        document.getElementById('btnStartMusic').textContent = '🎤 Começar';
+        document.getElementById('btnStopMusic').classList.remove('active');
+        document.getElementById('displayArea').className = 'display-area idle';
+        document.getElementById('statusDot').className = 'status-dot idle';
+        document.getElementById('modeText').textContent = 'MÚSICA';
+        document.getElementById('display').textContent = '⏹';
+        document.getElementById('display').className = 'display idle';
+        document.getElementById('displaySub').textContent = 'Música interrompida';
+        document.getElementById('musicProgress').classList.remove('active');
+        
+        if (playInterval) {
+            clearInterval(playInterval);
+            playInterval = null;
         }
     }
     
@@ -1311,10 +1547,14 @@
             div.className = 'history-item';
             if (i === recent.length - 1) div.classList.add('current');
             if (item.correto === false) div.classList.add('wrong');
+            if (item.modo === 'MÚSICA') div.classList.add('music');
             
             let label = item.nota || '---';
             if (item.modo === 'EXERCÍCIO' && item.esperado) {
                 label = `${item.nota}/${item.esperado}`;
+            }
+            if (item.modo === 'MÚSICA' && item.nota === 'MÚSICA') {
+                label = '🎤';
             }
             div.textContent = `${label} ${item.tempo || ''}`;
             container.appendChild(div);
@@ -1344,8 +1584,25 @@
             doc.text(`Data: ${new Date().toLocaleString()}`, 20, 46);
             doc.text(`Total: ${historico.length} registros`, 20, 54);
             
-            let y = 70;
-            doc.setFontSize(8);
+            // Música carregada
+            if (musicaAtual.length > 0) {
+                doc.text('--- MÚSICA CARREGADA ---', 20, 68);
+                let y = 76;
+                musicaAtual.forEach((item) => {
+                    if (y > 270) { doc.addPage(); y = 20; }
+                    let text = '';
+                    if (item.chord) text += `[${item.chord}] `;
+                    text += item.word;
+                    if (item.acertou) text += ' ✅';
+                    if (item.errou) text += ' ❌';
+                    doc.setFontSize(7);
+                    doc.text(text, 20, y);
+                    y += 4;
+                });
+            }
+            
+            let y = 90;
+            doc.setFontSize(7);
             
             // Histórico detalhado
             historico.forEach((item, i) => {
@@ -1356,13 +1613,13 @@
                 } else if (item.modo === 'EXERCÍCIO') {
                     text += `Exercício: ${item.nota} → ${item.esperado || ''} ${item.correto ? '✅' : '❌'}`;
                 } else if (item.modo === 'MÚSICA') {
-                    text += `Música: ${item.nota}`;
+                    text += `Música: ${item.nota} - ${item.detalhe || ''}`;
                 } else {
                     text += `${item.nota} - ${item.detalhe || ''}`;
                 }
                 text += ` (${item.tempo})`;
                 doc.text(text, 20, y);
-                y += 5;
+                y += 4;
             });
             
             doc.save('max-ear-report.pdf');
@@ -1378,6 +1635,7 @@
     window.addEventListener('load', () => {
         initCanvas();
         drawEmptyCanvas();
+        initPiano();
         
         document.getElementById('btnRecord').onclick = () => {
             if (isRecording) parar();
@@ -1390,6 +1648,9 @@
     window.addEventListener('beforeunload', () => {
         if (isRecording) parar();
         if (playInterval) clearInterval(playInterval);
+        if (pianoCtx && pianoCtx.state !== 'closed') {
+            pianoCtx.close();
+        }
     });
 </script>
 </body>
