@@ -3,51 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Max Ear AI Pro - Studio Edition</title>
+    <title>Max Ear AI Pro - Studio</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
-        
-        :root { 
-            --accent: #00e676; 
-            --accent-glow: rgba(0,230,118,0.3);
-            --bg-primary: #0a0a0f;
-            --bg-secondary: #12121a;
-            --bg-card: #1a1a24;
-            --danger: #ff1744;
-            --warning: #ffa726;
-            --text-primary: #ffffff;
-            --text-secondary: #8888aa;
-            --border-color: #2a2a3a;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: -apple-system, 'Segoe UI', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            overflow: hidden;
         }
         
-        body { 
-            background: var(--bg-primary); 
-            color: var(--text-primary); 
-            font-family: 'Inter', -apple-system, sans-serif; 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
-            padding: 12px;
-            background-image: radial-gradient(circle at 50% 0%, rgba(0,230,118,0.03) 0%, transparent 70%);
-        }
-        
-        /* Container Principal */
-        .container { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 10px; 
+        .container {
+            flex: 1;
             max-width: 520px;
             margin: 0 auto;
             width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
             overflow-y: auto;
             padding-bottom: 4px;
         }
@@ -55,140 +38,93 @@
         /* Visualizador */
         .visualizer-wrapper {
             background: #000;
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            border: 1px solid #1a1a2a;
+            height: 70px;
             overflow: hidden;
             position: relative;
-            height: 100px;
         }
-        #visualizer { 
-            width: 100%; 
-            height: 100%; 
+        #visualizer {
+            width: 100%;
+            height: 100%;
             display: block;
         }
-        .visualizer-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 30px;
-            background: linear-gradient(transparent, rgba(0,0,0,0.8));
-            pointer-events: none;
+        
+        /* Display */
+        .display-area {
+            background: #12121a;
+            border-radius: 14px;
+            padding: 14px 18px;
+            text-align: center;
+            border: 1px solid #1a1a2a;
+            transition: all 0.3s ease;
+            min-height: 100px;
+        }
+        .display-area.recording {
+            border-color: #00e676;
+            box-shadow: 0 0 30px rgba(0,230,118,0.05);
+        }
+        .display-area.exercise {
+            border-color: #ffa726;
+            box-shadow: 0 0 30px rgba(255,167,38,0.05);
         }
         
-        /* Display Area - Estúdio */
-        .display-area { 
-            background: var(--bg-card); 
-            padding: 18px 20px; 
-            border-radius: 16px; 
-            text-align: center; 
-            border: 1px solid var(--border-color);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            min-height: 120px;
-            position: relative;
-            overflow: hidden;
-        }
-        .display-area::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 50% 0%, var(--accent-glow), transparent 70%);
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            pointer-events: none;
-        }
-        .display-area.recording::before { opacity: 0.1; }
-        .display-area.recording { 
-            border-color: var(--accent); 
-            box-shadow: 0 0 40px rgba(0,230,118,0.05);
-        }
-        .display-area.idle { border-color: var(--border-color); }
-        
-        .mode-label { 
-            font-size: 0.65rem; 
-            color: var(--text-secondary); 
+        .mode-label {
+            font-size: 0.55rem;
+            color: #666;
             text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-weight: 600;
+            letter-spacing: 2px;
+            margin-bottom: 2px;
         }
         
         .status-dot {
             display: inline-block;
-            width: 8px;
-            height: 8px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
-            transition: all 0.3s ease;
+            margin-right: 5px;
+            vertical-align: middle;
         }
+        .status-dot.idle { background: #444; }
         .status-dot.recording { 
-            background: var(--danger); 
-            animation: pulse-dot 1s infinite;
-            box-shadow: 0 0 12px rgba(255,23,68,0.4);
+            background: #ff1744; 
+            animation: blink 0.8s infinite;
         }
-        .status-dot.idle { background: #444466; }
-        .status-dot.detected { 
-            background: var(--accent); 
-            box-shadow: 0 0 16px var(--accent-glow);
+        .status-dot.detected { background: #00e676; }
+        .status-dot.exercise { background: #ffa726; }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
         }
         
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.7); }
+        .display {
+            font-size: 3rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            min-height: 48px;
+            transition: color 0.2s ease;
         }
-        
-        .display { 
-            font-size: 3.8rem; 
-            font-weight: 800; 
-            font-family: 'Inter', sans-serif;
-            line-height: 1.1;
-            min-height: 58px;
-            transition: all 0.2s ease;
-            letter-spacing: -1px;
-            text-shadow: 0 0 30px rgba(0,230,118,0.1);
-        }
-        .display.wrong { 
-            color: var(--danger); 
-            animation: shake 0.3s ease;
-            text-shadow: 0 0 30px rgba(255,23,68,0.3);
-        }
-        .display.close { 
-            color: var(--warning); 
-            text-shadow: 0 0 30px rgba(255,167,38,0.2);
-        }
-        .display.in-tune { 
-            color: var(--accent); 
-            text-shadow: 0 0 40px var(--accent-glow);
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-6px); }
-            75% { transform: translateX(6px); }
-        }
+        .display.in-tune { color: #00e676; }
+        .display.wrong { color: #ff1744; }
+        .display.close { color: #ffa726; }
+        .display.idle { color: #444; }
+        .display.exercise { color: #ffa726; }
         
         .display-sub {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
+            font-size: 0.7rem;
+            color: #666;
+            min-height: 18px;
             margin-top: 2px;
-            min-height: 22px;
-            font-weight: 400;
-            letter-spacing: 0.5px;
         }
         
-        /* Indicador de Afinação */
+        /* Indicador de afinação */
         .tuner-container {
-            margin-top: 10px;
+            margin-top: 6px;
             padding: 0 10px;
         }
-        .tuner-indicator {
-            height: 4px;
+        .tuner-bar-bg {
+            height: 3px;
             background: #1a1a2a;
             border-radius: 4px;
             overflow: hidden;
@@ -197,307 +133,319 @@
         .tuner-bar {
             height: 100%;
             width: 50%;
-            background: var(--accent);
-            transition: width 0.08s ease, background 0.2s ease;
+            background: #00e676;
+            transition: width 0.05s ease, background 0.2s ease;
             border-radius: 4px;
         }
         .tuner-center {
             position: absolute;
             left: 50%;
-            top: -3px;
+            top: -2px;
             width: 2px;
-            height: 10px;
-            background: var(--text-primary);
+            height: 7px;
+            background: #fff;
             transform: translateX(-50%);
             border-radius: 2px;
         }
-        .tuner-labels {
+        
+        /* Escalas - Notas em destaque */
+        .scale-display {
+            display: none;
+            gap: 4px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 6px;
+            padding: 6px;
+            background: #0a0a0f;
+            border-radius: 10px;
+            border: 1px solid #1a1a2a;
+        }
+        .scale-display.active {
             display: flex;
-            justify-content: space-between;
-            font-size: 0.5rem;
-            color: var(--text-secondary);
-            padding: 2px 4px 0;
-            opacity: 0.5;
+        }
+        .scale-note {
+            padding: 4px 10px;
+            border-radius: 8px;
+            background: #1a1a2a;
+            color: #444;
+            font-size: 0.7rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        .scale-note.active {
+            background: #00e676;
+            color: #000;
+            border-color: #00e676;
+            box-shadow: 0 0 20px rgba(0,230,118,0.2);
+            transform: scale(1.05);
+        }
+        .scale-note.correct {
+            background: #00e676;
+            color: #000;
+            border-color: #00e676;
+        }
+        .scale-note.wrong {
+            background: #ff1744;
+            color: #fff;
+            border-color: #ff1744;
+            animation: shake 0.3s ease;
+        }
+        .scale-note.current-target {
+            border-color: #ffa726;
+            box-shadow: 0 0 20px rgba(255,167,38,0.15);
         }
         
-        /* Grid de Modos */
-        .modes-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr 1fr; 
-            gap: 6px; 
+        /* Botões de Modo */
+        .modes-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
         }
-        .modes-grid button { 
-            padding: 12px 8px; 
-            border-radius: 12px; 
-            border: 1px solid var(--border-color); 
-            font-weight: 600; 
-            background: var(--bg-card); 
-            color: var(--text-secondary);
+        .modes-grid button {
+            padding: 8px 6px;
+            border-radius: 10px;
+            border: 1px solid #1a1a2a;
+            background: #12121a;
+            color: #666;
+            font-weight: 600;
+            font-size: 0.65rem;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 0.75rem;
-            letter-spacing: 0.5px;
-            font-family: 'Inter', sans-serif;
-            position: relative;
-            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            font-family: inherit;
         }
-        .modes-grid button:hover { 
-            border-color: #444466;
-            transform: translateY(-1px);
-        }
-        .modes-grid button:active { transform: scale(0.95); }
-        .modes-grid button.active { 
-            background: var(--accent); 
-            color: #000; 
-            border-color: var(--accent);
-            box-shadow: 0 0 40px rgba(0,230,118,0.15);
-            transform: translateY(-1px);
+        .modes-grid button.active {
+            background: #00e676;
+            color: #000;
+            border-color: #00e676;
+            box-shadow: 0 0 30px rgba(0,230,118,0.1);
         }
         .modes-grid button .icon {
             display: block;
-            font-size: 1.4rem;
-            margin-bottom: 2px;
-        }
-        .modes-grid button .label {
-            display: block;
-            font-size: 0.65rem;
-            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 1px;
         }
         
-        /* Área de Letras */
-        .lyrics-section {
-            background: var(--bg-card);
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-            padding: 12px 14px;
-            max-height: 150px;
-            overflow-y: auto;
-            display: none;
-            transition: all 0.3s ease;
-        }
-        .lyrics-section.active { 
-            display: block;
-            border-color: var(--accent);
-        }
-        .lyrics-section .chord {
-            color: var(--accent);
-            font-weight: 700;
-            display: inline-block;
-            margin: 0 2px;
-            padding: 0 6px;
-            background: rgba(0,230,118,0.08);
-            border-radius: 4px;
-            font-size: 0.7rem;
-            border: 1px solid rgba(0,230,118,0.1);
-        }
-        .lyrics-section .lyric {
-            color: var(--text-primary);
-            display: inline;
-            font-size: 0.8rem;
-            line-height: 1.8;
-        }
-        .lyrics-section .line {
-            margin-bottom: 2px;
-        }
-        .lyrics-section .highlight {
-            background: rgba(0,230,118,0.05);
-            border-radius: 3px;
-            padding: 0 2px;
-        }
-        
-        /* Input de Letras */
-        .input-area {
+        /* Exercícios */
+        .exercise-controls {
             display: none;
             gap: 6px;
-            padding: 0 2px;
+            flex-wrap: wrap;
+            padding: 6px;
+            background: #0a0a0f;
+            border-radius: 10px;
+            border: 1px solid #1a1a2a;
         }
-        .input-area.active { display: flex; }
-        .input-area input {
+        .exercise-controls.active {
+            display: flex;
+        }
+        .exercise-controls select {
             flex: 1;
-            padding: 10px 14px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            font-size: 0.8rem;
-            font-family: 'Inter', sans-serif;
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid #1a1a2a;
+            background: #12121a;
+            color: #fff;
+            font-size: 0.7rem;
+            font-family: inherit;
+            min-width: 120px;
         }
-        .input-area input:focus {
+        .exercise-controls select:focus {
             outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 20px rgba(0,230,118,0.05);
+            border-color: #ffa726;
         }
-        .input-area input::placeholder {
-            color: var(--text-secondary);
-        }
-        .input-area button {
-            padding: 10px 20px;
-            border-radius: 12px;
+        .exercise-controls button {
+            padding: 6px 14px;
+            border-radius: 8px;
             border: none;
-            background: var(--accent);
-            color: #000;
             font-weight: 700;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             cursor: pointer;
             transition: all 0.2s ease;
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
         }
-        .input-area button:active { transform: scale(0.95); }
+        .exercise-controls button:active {
+            transform: scale(0.95);
+        }
+        .btn-play-exercise {
+            background: #ffa726;
+            color: #000;
+        }
+        .btn-play-exercise.playing {
+            background: #ff1744;
+            color: #fff;
+        }
+        .btn-start-exercise {
+            background: #00e676;
+            color: #000;
+        }
+        .btn-start-exercise:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        /* Música */
+        .music-controls {
+            display: none;
+            gap: 6px;
+            flex-wrap: wrap;
+            padding: 6px;
+            background: #0a0a0f;
+            border-radius: 10px;
+            border: 1px solid #1a1a2a;
+        }
+        .music-controls.active {
+            display: flex;
+        }
+        .music-controls textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid #1a1a2a;
+            background: #12121a;
+            color: #fff;
+            font-size: 0.7rem;
+            font-family: monospace;
+            resize: vertical;
+            min-height: 60px;
+        }
+        .music-controls textarea:focus {
+            outline: none;
+            border-color: #00e676;
+        }
+        .music-controls .btn-group {
+            display: flex;
+            gap: 6px;
+            width: 100%;
+        }
+        .music-controls button {
+            flex: 1;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 700;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .music-controls button:active {
+            transform: scale(0.95);
+        }
+        .btn-load-music {
+            background: #00e676;
+            color: #000;
+        }
+        .btn-start-music {
+            background: #ffa726;
+            color: #000;
+        }
+        .btn-start-music:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
         
         /* Histórico */
         .history {
-            max-height: 48px;
-            overflow-y: auto;
+            background: #0a0a0f;
+            border-radius: 10px;
+            border: 1px solid #1a1a2a;
+            padding: 4px 8px;
+            min-height: 30px;
             display: flex;
             flex-wrap: wrap;
-            gap: 4px;
-            padding: 6px 10px;
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            min-height: 38px;
+            gap: 3px;
             align-items: center;
+            overflow-y: auto;
+            max-height: 38px;
         }
         .history-empty {
-            color: var(--text-secondary);
-            font-size: 0.65rem;
+            color: #444;
+            font-size: 0.55rem;
             width: 100%;
             text-align: center;
-            opacity: 0.5;
         }
         .history-item {
-            background: var(--bg-card);
-            padding: 2px 12px;
-            border-radius: 20px;
-            font-size: 0.65rem;
-            color: var(--text-secondary);
-            border: 1px solid var(--border-color);
+            background: #12121a;
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-size: 0.55rem;
+            color: #888;
+            border: 1px solid #1a1a2a;
             white-space: nowrap;
-            font-weight: 500;
-            transition: all 0.2s ease;
         }
-        .history-item.current { 
-            color: var(--accent); 
-            border-color: var(--accent);
-            background: rgba(0,230,118,0.06);
-            box-shadow: 0 0 20px rgba(0,230,118,0.05);
+        .history-item.current {
+            color: #00e676;
+            border-color: #00e676;
         }
-        .history-item.chord {
-            color: var(--warning);
-            border-color: rgba(255,167,38,0.3);
-        }
-        .history-item .badge {
-            font-size: 0.5rem;
-            opacity: 0.5;
-            margin-left: 4px;
+        .history-item.wrong {
+            color: #ff1744;
+            border-color: #ff1744;
         }
         
-        /* Footer - Botões */
-        .footer { 
-            display: flex; 
-            gap: 8px; 
-            padding: 8px 0 4px;
+        /* Footer */
+        .footer {
+            display: flex;
+            gap: 6px;
+            padding: 6px 0 2px;
             max-width: 520px;
             margin: 0 auto;
             width: 100%;
         }
-        .footer button { 
-            padding: 14px 16px; 
+        .footer button {
+            padding: 10px 14px;
             border: none;
-            border-radius: 14px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 0.85rem;
+            border-radius: 10px;
             font-weight: 700;
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
         }
-        .footer button:active { transform: scale(0.95); }
+        .footer button:active {
+            transform: scale(0.95);
+        }
         
-        #btnRecord { 
-            flex: 2; 
-            background: var(--accent); 
+        #btnRecord {
+            flex: 2;
+            background: #00e676;
             color: #000;
-            box-shadow: 0 0 30px rgba(0,230,118,0.1);
-        }
-        #btnRecord:hover:not(:disabled) {
-            box-shadow: 0 0 50px rgba(0,230,118,0.2);
-            transform: translateY(-2px);
         }
         #btnRecord:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
         }
         #btnRecord.recording {
-            background: var(--danger);
+            background: #ff1744;
             color: #fff;
-            box-shadow: 0 0 30px rgba(255,23,68,0.2);
-            animation: pulse-record 1.5s infinite;
-        }
-        @keyframes pulse-record {
-            0%, 100% { box-shadow: 0 0 30px rgba(255,23,68,0.2); }
-            50% { box-shadow: 0 0 60px rgba(255,23,68,0.4); }
         }
         
-        #btnLyrics {
-            flex: 0.8;
-            background: var(--bg-card);
-            color: var(--text-secondary);
-            border: 1px solid var(--border-color);
-            font-size: 0.75rem;
-        }
-        #btnLyrics.active {
-            background: var(--accent);
-            color: #000;
-            border-color: var(--accent);
-            box-shadow: 0 0 30px rgba(0,230,118,0.1);
-        }
-        
-        #btnExport { 
-            flex: 1; 
-            background: var(--bg-card); 
-            color: var(--text-secondary);
-            border: 1px solid var(--border-color);
+        #btnExport {
+            flex: 1;
+            background: #12121a;
+            color: #666;
+            border: 1px solid #1a1a2a;
         }
         #btnExport:disabled {
             opacity: 0.3;
             cursor: not-allowed;
         }
-        #btnExport.active { 
-            background: #1a237e; 
+        #btnExport.active {
+            background: #1a237e;
             color: #fff;
             border-color: #1a237e;
-            box-shadow: 0 0 30px rgba(26,35,126,0.2);
-        }
-        #btnExport.active:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 50px rgba(26,35,126,0.3);
         }
         
-        /* Scrollbar */
+        /* Scroll */
         ::-webkit-scrollbar { width: 3px; }
-        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
-        ::-webkit-scrollbar-thumb { 
-            background: var(--border-color); 
-            border-radius: 10px;
-        }
+        ::-webkit-scrollbar-track { background: #0a0a0f; }
+        ::-webkit-scrollbar-thumb { background: #1a1a2a; border-radius: 10px; }
         
-        /* Responsivo */
         @media (max-width: 400px) {
-            .display { font-size: 2.8rem; }
-            .modes-grid button { padding: 8px 4px; }
-            .modes-grid button .icon { font-size: 1.2rem; }
-            .footer button { font-size: 0.7rem; padding: 10px 12px; }
-            .display-area { padding: 14px 16px; min-height: 100px; }
-        }
-        
-        @media (min-width: 768px) {
-            .container { max-width: 600px; }
-            .footer { max-width: 600px; }
+            .display { font-size: 2.4rem; }
+            .modes-grid button { padding: 5px 3px; font-size: 0.55rem; }
+            .modes-grid button .icon { font-size: 1rem; }
+            .footer button { font-size: 0.65rem; padding: 8px 10px; }
         }
     </style>
 </head>
@@ -507,29 +455,24 @@
     <!-- Visualizador -->
     <div class="visualizer-wrapper">
         <canvas id="visualizer"></canvas>
-        <div class="visualizer-overlay"></div>
     </div>
     
-    <!-- Display Principal -->
+    <!-- Display -->
     <div class="display-area idle" id="displayArea">
-        <div class="mode-label" id="label">
+        <div class="mode-label">
             <span class="status-dot idle" id="statusDot"></span>
             <span id="modeText">PRONTO</span>
-            <span style="opacity:0.3;font-size:0.5rem;">●</span>
-            <span id="bpmDisplay" style="font-size:0.5rem;color:var(--text-secondary);">-- BPM</span>
         </div>
-        <div id="display" class="display">---</div>
+        <div id="display" class="display idle">---</div>
         <div id="displaySub" class="display-sub">Toque ou cante para começar</div>
         
+        <!-- Escala Display -->
+        <div class="scale-display" id="scaleDisplay"></div>
+        
         <div class="tuner-container">
-            <div class="tuner-indicator" id="tunerIndicator">
+            <div class="tuner-bar-bg">
                 <div class="tuner-bar" id="tunerBar"></div>
                 <div class="tuner-center"></div>
-            </div>
-            <div class="tuner-labels">
-                <span>⬇ Grave</span>
-                <span>🎯</span>
-                <span>Agudo ⬆</span>
             </div>
         </div>
     </div>
@@ -538,40 +481,50 @@
     <div class="modes-grid">
         <button onclick="setModo('AFINADOR', this)" class="active">
             <span class="icon">🎯</span>
-            <span class="label">Afinador</span>
+            Afinador
         </button>
-        <button onclick="setModo('ACORDES', this)">
-            <span class="icon">🎹</span>
-            <span class="label">Acordes</span>
+        <button onclick="setModo('EXERCICIO', this)">
+            <span class="icon">🎼</span>
+            Exercício
         </button>
-        <button onclick="setModo('MELODIA', this)">
-            <span class="icon">🎵</span>
-            <span class="label">Melodia</span>
+        <button onclick="setModo('MUSICA', this)">
+            <span class="icon">🎤</span>
+            Música
         </button>
     </div>
     
-    <!-- Letras -->
-    <div class="lyrics-section" id="lyricsArea">
-        <div style="color:var(--text-secondary); text-align:center; padding:8px; font-size:0.75rem;">
-            📝 Cole a letra e clique em Processar
+    <!-- Exercícios -->
+    <div class="exercise-controls" id="exerciseControls">
+        <select id="exerciseSelect">
+            <option value="maior_asc">Escala Maior Ascendente</option>
+            <option value="maior_desc">Escala Maior Descendente</option>
+            <option value="menor_asc">Escala Menor Ascendente</option>
+            <option value="menor_desc">Escala Menor Descendente</option>
+            <option value="maior_harm">Escala Maior Harmônica</option>
+            <option value="menor_harm">Escala Menor Harmônica</option>
+        </select>
+        <button class="btn-play-exercise" id="btnPlayExercise" onclick="playExercise()">▶ Tocar</button>
+        <button class="btn-start-exercise" id="btnStartExercise" onclick="startExercise()">🎯 Iniciar</button>
+    </div>
+    
+    <!-- Música -->
+    <div class="music-controls" id="musicControls">
+        <textarea id="musicInput" placeholder="Cole a música com cifras aqui...&#10;Ex:&#10; [C] Meu [G] bem querer&#10; [Am] Quero te [F] ver"></textarea>
+        <div class="btn-group">
+            <button class="btn-load-music" onclick="loadMusic()">📥 Carregar</button>
+            <button class="btn-start-music" id="btnStartMusic" onclick="startMusic()" disabled>🎤 Começar</button>
         </div>
-    </div>
-    
-    <div class="input-area" id="inputArea">
-        <input type="text" id="lyricsInput" placeholder="Cole a letra da música aqui..." />
-        <button onclick="processLyrics()">Processar</button>
     </div>
     
     <!-- Histórico -->
     <div id="historyContainer" class="history">
-        <div class="history-empty">Histórico de notas e acordes</div>
+        <div class="history-empty">Histórico de notas</div>
     </div>
 </div>
 
 <!-- Footer -->
 <div class="footer">
     <button id="btnRecord">🎤 Iniciar</button>
-    <button id="btnLyrics" onclick="toggleLyrics()">📝 Letra</button>
     <button id="btnExport" disabled>📄 PDF</button>
 </div>
 
@@ -586,35 +539,83 @@
         'G#': 415.30, 'A': 440.00, 'A#': 466.16, 'B': 493.88
     };
     
+    // Escalas
+    const ESCALAS = {
+        'maior_asc': { 
+            nome: 'Maior Ascendente',
+            notas: ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C'],
+            tipo: 'asc'
+        },
+        'maior_desc': { 
+            nome: 'Maior Descendente',
+            notas: ['C', 'B', 'A', 'G', 'F', 'E', 'D', 'C'],
+            tipo: 'desc'
+        },
+        'menor_asc': { 
+            nome: 'Menor Ascendente',
+            notas: ['C', 'D', 'D#', 'F', 'G', 'G#', 'A#', 'C'],
+            tipo: 'asc'
+        },
+        'menor_desc': { 
+            nome: 'Menor Descendente',
+            notas: ['C', 'A#', 'G#', 'G', 'F', 'D#', 'D', 'C'],
+            tipo: 'desc'
+        },
+        'maior_harm': { 
+            nome: 'Maior Harmônica',
+            notas: ['C', 'D', 'E', 'F', 'G', 'G#', 'B', 'C'],
+            tipo: 'asc'
+        },
+        'menor_harm': { 
+            nome: 'Menor Harmônica',
+            notas: ['C', 'D', 'D#', 'F', 'G', 'G#', 'B', 'C'],
+            tipo: 'asc'
+        }
+    };
+    
     // ============================================================
-    //  VARIÁVEIS GLOBAIS
+    //  VARIÁVEIS
     // ============================================================
-    let audioContext = null;
+    let audioCtx = null;
     let analyser = null;
     let modo = 'AFINADOR';
     let historico = [];
     let isRecording = false;
-    let animationId = null;
+    let animId = null;
     let canvas = null;
     let ctx = null;
-    let mediaStream = null;
-    let currentFreq = 0;
-    let letrasAtivas = false;
-    let musicaAtual = [];
-    let acordesDetectados = [];
+    let stream = null;
     let ultimaNota = '';
     let contadorSilencio = 0;
     
+    // Exercício
+    let escalaAtual = null;
+    let indiceEscala = 0;
+    let exercicioAtivo = false;
+    let exercicioNotasAcertadas = 0;
+    let exercicioTotalNotas = 0;
+    let isPlayingExercise = false;
+    let playInterval = null;
+    
+    // Música
+    let musicaAtual = [];
+    let musicaIndex = 0;
+    let musicaAtiva = false;
+    let musicaErros = 0;
+    let musicaAcertos = 0;
+    
     // ============================================================
-    //  INICIALIZAÇÃO
+    //  INICIALIZAÇÃO DO CANVAS
     // ============================================================
     function initCanvas() {
         canvas = document.getElementById('visualizer');
         ctx = canvas.getContext('2d');
         resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
     }
     
     function resizeCanvas() {
+        if (!canvas) return;
         const rect = canvas.getBoundingClientRect();
         canvas.width = rect.width;
         canvas.height = rect.height;
@@ -628,47 +629,44 @@
         ctx.strokeStyle = '#1a1a2a';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        const midY = canvas.height / 2;
-        ctx.moveTo(0, midY);
-        ctx.lineTo(canvas.width, midY);
+        ctx.moveTo(0, canvas.height / 2);
+        ctx.lineTo(canvas.width, canvas.height / 2);
         ctx.stroke();
     }
     
     // ============================================================
-    //  VISUALIZADOR DE ÁUDIO
+    //  VISUALIZADOR
     // ============================================================
     function drawVisualizer(dataArray) {
-        if (!ctx) return;
-        const width = canvas.width;
-        const height = canvas.height;
-        const midY = height / 2;
+        if (!ctx || !canvas) return;
+        const w = canvas.width;
+        const h = canvas.height;
+        const mid = h / 2;
         
         ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, width, height);
+        ctx.fillRect(0, 0, w, h);
         
-        // Linha central
         ctx.strokeStyle = '#1a1a2a';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(0, midY);
-        ctx.lineTo(width, midY);
+        ctx.moveTo(0, mid);
+        ctx.lineTo(w, mid);
         ctx.stroke();
         
-        // Forma de onda
         ctx.strokeStyle = '#00e676';
         ctx.lineWidth = 2;
-        ctx.shadowColor = 'rgba(0,230,118,0.2)';
-        ctx.shadowBlur = 10;
+        ctx.shadowColor = 'rgba(0,230,118,0.15)';
+        ctx.shadowBlur = 8;
         ctx.beginPath();
         
-        const step = Math.max(1, Math.floor(dataArray.length / width));
-        const amp = height / 2 * 0.8;
+        const step = Math.max(1, Math.floor(dataArray.length / w));
+        const amp = h / 2 * 0.8;
         
-        for (let i = 0; i < width; i++) {
-            const index = Math.floor(i * step);
-            const value = dataArray[index] || 0;
+        for (let i = 0; i < w; i++) {
+            const idx = Math.floor(i * step);
+            const val = dataArray[idx] || 0;
             const x = i;
-            const y = midY + (value * amp);
+            const y = mid + (val * amp);
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         }
@@ -677,7 +675,7 @@
     }
     
     // ============================================================
-    //  DETECÇÃO DE PITCH (Autocorrelação)
+    //  DETECÇÃO DE PITCH
     // ============================================================
     function autoCorrelate(buffer, sampleRate) {
         const size = buffer.length;
@@ -688,22 +686,22 @@
         rms = Math.sqrt(rms / size);
         if (rms < 0.01) return -1;
         
-        let maxIndex = -1;
-        let maxValue = -1;
+        let maxIdx = -1;
+        let maxVal = -1;
         
         for (let i = 0; i < size / 2; i++) {
             let corr = 0;
             for (let j = 0; j < size - i; j++) {
                 corr += buffer[j] * buffer[j + i];
             }
-            if (corr > maxValue) {
-                maxValue = corr;
-                maxIndex = i;
+            if (corr > maxVal) {
+                maxVal = corr;
+                maxIdx = i;
             }
         }
         
-        if (maxIndex > 0 && maxValue > 0.1) {
-            return sampleRate / maxIndex;
+        if (maxIdx > 0 && maxVal > 0.1) {
+            return sampleRate / maxIdx;
         }
         return -1;
     }
@@ -717,237 +715,682 @@
         return NOTAS[noteIndex];
     }
     
-    function getNoteFrequency(note) {
+    function getNoteFreq(note) {
         return FREQ_NOTAS[note] || 0;
     }
     
-    // ============================================================
-    //  DETECÇÃO DE ACORDES
-    // ============================================================
-    function detectChordAdvanced(nota) {
-        const chordMap = {
-            'C': ['C', 'E', 'G'],
-            'C#': ['C#', 'F', 'G#'],
-            'D': ['D', 'F#', 'A'],
-            'D#': ['D#', 'G', 'A#'],
-            'E': ['E', 'G#', 'B'],
-            'F': ['F', 'A', 'C'],
-            'F#': ['F#', 'A#', 'C#'],
-            'G': ['G', 'B', 'D'],
-            'G#': ['G#', 'C', 'D#'],
-            'A': ['A', 'C#', 'E'],
-            'A#': ['A#', 'D', 'F'],
-            'B': ['B', 'D#', 'F#']
-        };
-        return chordMap[nota] || null;
+    function getNoteIndex(note) {
+        return NOTAS.indexOf(note);
     }
     
     // ============================================================
-    //  PROCESSAMENTO DE ÁUDIO (LOOP PRINCIPAL)
+    //  PROCESSAMENTO PRINCIPAL
     // ============================================================
     function processAudio() {
         if (!analyser || !isRecording) return;
         
-        const bufferLength = analyser.fftSize;
-        const dataArray = new Float32Array(bufferLength);
+        const bufLen = analyser.fftSize;
+        const dataArray = new Float32Array(bufLen);
         analyser.getFloatTimeDomainData(dataArray);
         
         drawVisualizer(dataArray);
         
-        const freq = autoCorrelate(dataArray, audioContext.sampleRate);
+        const freq = autoCorrelate(dataArray, audioCtx.sampleRate);
         const display = document.getElementById('display');
         const sub = document.getElementById('displaySub');
         const tunerBar = document.getElementById('tunerBar');
-        const displayArea = document.getElementById('displayArea');
         const statusDot = document.getElementById('statusDot');
+        const displayArea = document.getElementById('displayArea');
         
         if (freq > 50 && freq < 2000) {
-            currentFreq = freq;
-            const nota = freqToNote(freq);
             contadorSilencio = 0;
+            const nota = freqToNote(freq);
             
             if (nota) {
                 let displayText = nota;
                 let subText = `${Math.round(freq)} Hz`;
+                let displayClass = 'display';
                 let isInTune = false;
                 let isClose = false;
-                let displayClass = 'display';
                 
-                // === MODO AFINADOR ===
+                // === AFINADOR ===
                 if (modo === 'AFINADOR') {
-                    const targetFreq = getNoteFrequency(nota);
+                    const targetFreq = getNoteFreq(nota);
                     if (targetFreq > 0) {
                         const diff = ((freq - targetFreq) / targetFreq) * 100;
-                        const diffPercent = Math.abs(diff);
+                        const diffPct = Math.abs(diff);
+                        const barPct = Math.min(Math.max(diff * 2 + 50, 0), 100);
+                        tunerBar.style.width = barPct + '%';
                         
-                        // Barra do afinador
-                        const barPercent = Math.min(Math.max(diff * 2 + 50, 0), 100);
-                        tunerBar.style.width = barPercent + '%';
-                        
-                        if (diffPercent < 0.5) {
-                            tunerBar.style.background = 'var(--accent)';
+                        if (diffPct < 0.5) {
+                            tunerBar.style.background = '#00e676';
                             isInTune = true;
                             displayClass = 'display in-tune';
                             subText = `✅ Afinado! (${Math.round(freq)} Hz)`;
-                        } else if (diffPercent < 2) {
-                            tunerBar.style.background = 'var(--warning)';
+                        } else if (diffPct < 2) {
+                            tunerBar.style.background = '#ffa726';
                             isClose = true;
                             displayClass = 'display close';
-                            subText = diff < 0 ? '⬇️ Grave (+' + diffPercent.toFixed(1) + '%)' : '⬆️ Agudo (+' + diffPercent.toFixed(1) + '%)';
+                            subText = diff < 0 ? `⬇️ Grave (${diffPct.toFixed(1)}%)` : `⬆️ Agudo (${diffPct.toFixed(1)}%)`;
                         } else {
-                            tunerBar.style.background = 'var(--danger)';
+                            tunerBar.style.background = '#ff1744';
                             displayClass = 'display wrong';
                             subText = diff < 0 ? '⬇️ Muito grave' : '⬆️ Muito agudo';
                         }
+                        
+                        if (isInTune || isClose) {
+                            historico.push({
+                                nota: nota,
+                                modo: 'AFINADOR',
+                                freq: Math.round(freq),
+                                tempo: new Date().toLocaleTimeString(),
+                                status: isInTune ? '✅' : '⚠️'
+                            });
+                            updateHistory();
+                        }
                     }
                     
-                    // Atualiza display
                     display.className = displayClass;
                     display.textContent = displayText;
-                    display.style.color = isInTune ? 'var(--accent)' : 
-                                         isClose ? 'var(--warning)' : 'var(--danger)';
                     sub.textContent = subText;
-                    
-                    // Status dot
                     statusDot.className = 'status-dot ' + (isInTune ? 'detected' : 'recording');
-                    document.getElementById('modeText').textContent = `AFINADOR ${isInTune ? '✅' : ''}`;
+                    document.getElementById('modeText').textContent = 'AFINADOR';
                     
-                    // Adiciona ao histórico se estiver afinado ou próximo
-                    if (isInTune || isClose) {
-                        historico.push({
-                            nota: nota,
-                            modo: modo,
-                            frequencia: Math.round(freq),
-                            tempo: new Date().toLocaleTimeString(),
-                            afinado: isInTune,
-                            diff: isClose ? Math.round(Math.abs(((freq - targetFreq) / targetFreq) * 100) * 10) / 10 : 0
-                        });
-                        updateHistory();
-                    }
+                // === EXERCÍCIO ===
+                } else if (modo === 'EXERCICIO' && exercicioAtivo && escalaAtual) {
+                    const notaEsperada = escalaAtual.notas[indiceEscala];
+                    const isCorrect = nota === notaEsperada;
                     
-                // === MODO ACORDES ===
-                } else if (modo === 'ACORDES') {
-                    const chordNotes = detectChordAdvanced(nota);
-                    if (chordNotes) {
-                        displayText = nota;
-                        subText = `Acorde: ${chordNotes.join(' - ')}`;
-                        display.className = 'display in-tune';
-                        display.style.color = 'var(--accent)';
+                    // Atualiza display
+                    displayText = nota;
+                    displayClass = isCorrect ? 'display in-tune' : 'display wrong';
+                    subText = isCorrect ? `✅ Nota certa! (${indiceEscala + 1}/${escalaAtual.notas.length})` : 
+                                         `❌ Era: ${notaEsperada}`;
+                    
+                    if (isCorrect) {
+                        exercicioNotasAcertadas++;
+                        // Marca nota como correta na escala
+                        const scaleNotes = document.querySelectorAll('.scale-note');
+                        if (scaleNotes[indiceEscala]) {
+                            scaleNotes[indiceEscala].classList.remove('current-target', 'wrong');
+                            scaleNotes[indiceEscala].classList.add('correct');
+                        }
+                        indiceEscala++;
                         
-                        // Registra acorde
-                        if (ultimaNota !== nota) {
-                            acordesDetectados.push({
-                                chord: nota,
-                                notes: chordNotes,
-                                time: new Date().toLocaleTimeString()
-                            });
-                            ultimaNota = nota;
+                        // Verifica se terminou
+                        if (indiceEscala >= escalaAtual.notas.length) {
+                            const percentual = Math.round((exercicioNotasAcertadas / exercicioTotalNotas) * 100);
+                            subText = `🎉 Exercício concluído! Acertos: ${exercicioNotasAcertadas}/${exercicioTotalNotas} (${percentual}%)`;
+                            displayText = '✅';
+                            exercicioAtivo = false;
+                            document.getElementById('btnStartExercise').disabled = false;
+                            document.getElementById('btnStartExercise').textContent = '🔄 Refazer';
+                            document.getElementById('displayArea').className = 'display-area idle';
+                            statusDot.className = 'status-dot idle';
                             
                             // Adiciona ao histórico
                             historico.push({
-                                nota: nota,
-                                modo: 'ACORDE',
-                                detalhe: chordNotes.join('+'),
+                                nota: 'EXERCÍCIO',
+                                modo: 'EXERCÍCIO',
+                                detalhe: `${escalaAtual.nome}: ${exercicioNotasAcertadas}/${exercicioTotalNotas}`,
+                                tempo: new Date().toLocaleTimeString()
+                            });
+                            updateHistory();
+                        } else {
+                            // Destaca próxima nota
+                            const scaleNotes = document.querySelectorAll('.scale-note');
+                            if (scaleNotes[indiceEscala]) {
+                                scaleNotes[indiceEscala].classList.add('current-target');
+                            }
+                        }
+                    } else {
+                        // Nota errada
+                        const scaleNotes = document.querySelectorAll('.scale-note');
+                        if (scaleNotes[indiceEscala]) {
+                            scaleNotes[indiceEscala].classList.add('wrong');
+                            setTimeout(() => {
+                                scaleNotes[indiceEscala].classList.remove('wrong');
+                            }, 500);
+                        }
+                    }
+                    
+                    display.className = displayClass;
+                    display.textContent = displayText;
+                    sub.textContent = subText;
+                    statusDot.className = 'status-dot ' + (isCorrect ? 'detected' : 'recording');
+                    document.getElementById('modeText').textContent = `EXERCÍCIO ${indiceEscala + 1}/${escalaAtual.notas.length}`;
+                    
+                    // Histórico do exercício
+                    historico.push({
+                        nota: nota,
+                        modo: 'EXERCÍCIO',
+                        esperado: notaEsperada,
+                        correto: isCorrect,
+                        tempo: new Date().toLocaleTimeString()
+                    });
+                    updateHistory();
+                    
+                // === MÚSICA ===
+                } else if (modo === 'MUSICA' && musicaAtiva && musicaIndex < musicaAtual.length) {
+                    const itemAtual = musicaAtual[musicaIndex];
+                    const notaEsperada = itemAtual.chord || itemAtual.nota;
+                    
+                    if (notaEsperada) {
+                        const isCorrect = nota === notaEsperada;
+                        
+                        if (isCorrect) {
+                            musicaAcertos++;
+                            displayClass = 'display in-tune';
+                            subText = `✅ Nota certa! (${musicaIndex + 1}/${musicaAtual.length})`;
+                            itemAtual.acertou = true;
+                        } else {
+                            musicaErros++;
+                            displayClass = 'display wrong';
+                            subText = `❌ Era: ${notaEsperada}`;
+                            itemAtual.errou = true;
+                        }
+                        
+                        displayText = nota;
+                        display.className = displayClass;
+                        display.textContent = displayText;
+                        sub.textContent = subText;
+                        statusDot.className = 'status-dot ' + (isCorrect ? 'detected' : 'recording');
+                        document.getElementById('modeText').textContent = `MÚSICA ${musicaIndex + 1}/${musicaAtual.length}`;
+                        
+                        // Próxima nota
+                        musicaIndex++;
+                        
+                        // Verifica se terminou
+                        if (musicaIndex >= musicaAtual.length) {
+                            const percentual = Math.round((musicaAcertos / (musicaAcertos + musicaErros)) * 100);
+                            subText = `🎤 Música concluída! Acertos: ${musicaAcertos}, Erros: ${musicaErros} (${percentual}%)`;
+                            displayText = '🎉';
+                            musicaAtiva = false;
+                            document.getElementById('btnStartMusic').disabled = false;
+                            document.getElementById('btnStartMusic').textContent = '🔄 Refazer';
+                            document.getElementById('displayArea').className = 'display-area idle';
+                            statusDot.className = 'status-dot idle';
+                            
+                            historico.push({
+                                nota: 'MÚSICA',
+                                modo: 'MÚSICA',
+                                detalhe: `Acertos: ${musicaAcertos}, Erros: ${musicaErros}`,
                                 tempo: new Date().toLocaleTimeString()
                             });
                             updateHistory();
                         }
-                    } else {
-                        displayText = nota;
-                        subText = 'Acorde não identificado';
-                        display.className = 'display';
-                        display.style.color = 'var(--text-secondary)';
                     }
-                    statusDot.className = 'status-dot detected';
-                    document.getElementById('modeText').textContent = `ACORDES`;
-                    
-                // === MODO MELODIA ===
                 } else {
-                    display.className = 'display in-tune';
-                    display.style.color = 'var(--accent)';
-                    displayText = nota;
-                    subText = `🎵 ${nota} (${Math.round(freq)} Hz)`;
-                    statusDot.className = 'status-dot detected';
-                    document.getElementById('modeText').textContent = `MELODIA`;
-                    
-                    // Adiciona ao histórico
-                    if (ultimaNota !== nota) {
-                        historico.push({
-                            nota: nota,
-                            modo: modo,
-                            frequencia: Math.round(freq),
-                            tempo: new Date().toLocaleTimeString()
-                        });
-                        updateHistory();
-                        ultimaNota = nota;
-                    }
+                    // Modo normal
+                    display.className = 'display idle';
+                    display.textContent = '---';
+                    sub.textContent = 'Aguardando...';
+                    statusDot.className = 'status-dot recording';
                 }
                 
-                // Atualiza display
-                document.getElementById('display').textContent = displayText;
-                document.getElementById('displaySub').textContent = subText;
-                document.getElementById('displayArea').className = 'display-area recording';
-                
-                // Atualiza letras se ativo
-                if (letrasAtivas && musicaAtual.length > 0) {
-                    updateLyricsWithChord(nota);
-                }
+                displayArea.className = 'display-area recording';
                 
             } else {
-                // Frequência detectada mas nota não identificada
                 tunerBar.style.width = '50%';
                 tunerBar.style.background = '#444';
                 display.textContent = '---';
-                display.className = 'display';
-                display.style.color = 'var(--text-secondary)';
+                display.className = 'display idle';
                 sub.textContent = 'Sinal detectado';
                 statusDot.className = 'status-dot recording';
-                document.getElementById('modeText').textContent = modo;
             }
         } else {
-            // Silêncio ou sinal muito baixo
             contadorSilencio++;
             if (contadorSilencio > 10) {
                 tunerBar.style.width = '50%';
                 tunerBar.style.background = '#444';
-                display.textContent = '---';
-                display.className = 'display';
-                display.style.color = 'var(--text-secondary)';
-                sub.textContent = contadorSilencio > 30 ? 'Aguardando sinal...' : 'Toque ou cante...';
-                statusDot.className = 'status-dot recording';
-                document.getElementById('modeText').textContent = modo;
+                if (!exercicioAtivo && !musicaAtiva) {
+                    display.textContent = '---';
+                    display.className = 'display idle';
+                    sub.textContent = contadorSilencio > 30 ? 'Aguardando sinal...' : 'Toque ou cante...';
+                    statusDot.className = 'status-dot recording';
+                    displayArea.className = 'display-area';
+                }
                 ultimaNota = '';
             }
         }
         
-        animationId = requestAnimationFrame(processAudio);
+        animId = requestAnimationFrame(processAudio);
     }
     
     // ============================================================
-    //  LETRAS E ACORDES
+    //  CONTROLES
     // ============================================================
-    function toggleLyrics() {
-        const lyricsArea = document.getElementById('lyricsArea');
-        const inputArea = document.getElementById('inputArea');
-        const btn = document.getElementById('btnLyrics');
-        
-        letrasAtivas = !letrasAtivas;
-        
-        if (letrasAtivas) {
-            lyricsArea.classList.add('active');
-            inputArea.classList.add('active');
-            btn.classList.add('active');
-            btn.textContent = '📝 Ocultar';
-        } else {
-            lyricsArea.classList.remove('active');
-            inputArea.classList.remove('active');
-            btn.classList.remove('active');
-            btn.textContent = '📝 Letra';
+    async function iniciar() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                audio: { echoCancellation: false, noiseSuppression: false } 
+            });
+            
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 4096;
+            analyser.smoothingTimeConstant = 0.7;
+            
+            const source = audioCtx.createMediaStreamSource(stream);
+            source.connect(analyser);
+            
+            isRecording = true;
+            const btn = document.getElementById('btnRecord');
+            btn.disabled = true;
+            btn.textContent = '🔴 Gravando...';
+            btn.classList.add('recording');
+            
+            document.getElementById('btnExport').disabled = false;
+            document.getElementById('btnExport').classList.add('active');
+            document.getElementById('displayArea').className = 'display-area recording';
+            document.getElementById('statusDot').className = 'status-dot recording';
+            document.getElementById('modeText').textContent = 'ESCUTANDO...';
+            
+            processAudio();
+            
+        } catch (err) {
+            alert('Erro ao acessar microfone: ' + err.message);
         }
     }
     
-    function processLyrics() {
-        const input = document.getElementById('lyricsInput');
+    function parar() {
+        isRecording = false;
+        if (animId) {
+            cancelAnimationFrame(animId);
+            animId = null;
+        }
+        if (stream) {
+            stream.getTracks().forEach(t => t.stop());
+            stream = null;
+        }
+        if (audioCtx && audioCtx.state !== 'closed') {
+            audioCtx.close();
+            audioCtx = null;
+        }
+        
+        const btn = document.getElementById('btnRecord');
+        btn.disabled = false;
+        btn.textContent = '🎤 Iniciar';
+        btn.classList.remove('recording');
+        
+        document.getElementById('btnExport').classList.remove('active');
+        document.getElementById('displayArea').className = 'display-area idle';
+        document.getElementById('statusDot').className = 'status-dot idle';
+        document.getElementById('modeText').textContent = 'PRONTO';
+        document.getElementById('display').textContent = '---';
+        document.getElementById('display').className = 'display idle';
+        document.getElementById('displaySub').textContent = 'Toque ou cante para começar';
+        document.getElementById('tunerBar').style.width = '50%';
+        document.getElementById('tunerBar').style.background = '#444';
+        drawEmptyCanvas();
+        
+        // Para exercícios e música
+        if (playInterval) {
+            clearInterval(playInterval);
+            playInterval = null;
+        }
+        exercicioAtivo = false;
+        musicaAtiva = false;
+    }
+    
+    // ============================================================
+    //  MUDAR MODO
+    // ============================================================
+    function setModo(m, btn) {
+        if (isRecording && !confirm(`Mudar para ${m}? O histórico será limpo.`)) {
+            return;
+        }
+        
+        modo = m;
+        document.querySelectorAll('.modes-grid button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // Reset
+        historico = [];
+        ultimaNota = '';
+        exercicioAtivo = false;
+        musicaAtiva = false;
+        indiceEscala = 0;
+        musicaIndex = 0;
+        
+        // Mostrar/ocultar controles
+        document.getElementById('exerciseControls').className = 'exercise-controls' + (m === 'EXERCICIO' ? ' active' : '');
+        document.getElementById('musicControls').className = 'music-controls' + (m === 'MUSICA' ? ' active' : '');
+        document.getElementById('scaleDisplay').className = 'scale-display' + (m === 'EXERCICIO' ? ' active' : '');
+        
+        if (m === 'EXERCICIO') {
+            document.getElementById('btnStartExercise').disabled = false;
+            document.getElementById('btnStartExercise').textContent = '🎯 Iniciar';
+            document.getElementById('scaleDisplay').innerHTML = '';
+        }
+        
+        if (m === 'MUSICA') {
+            document.getElementById('btnStartMusic').disabled = true;
+            document.getElementById('btnStartMusic').textContent = '🎤 Começar';
+        }
+        
+        updateHistory();
+        
+        document.getElementById('display').textContent = '---';
+        document.getElementById('display').className = 'display idle';
+        document.getElementById('displaySub').textContent = `Modo: ${m}`;
+        document.getElementById('modeText').textContent = m;
+        document.getElementById('tunerBar').style.width = '50%';
+        document.getElementById('tunerBar').style.background = '#444';
+        document.getElementById('statusDot').className = 'status-dot idle';
+        document.getElementById('displayArea').className = 'display-area idle';
+    }
+    
+    // ============================================================
+    //  EXERCÍCIOS
+    // ============================================================
+    function playExercise() {
+        const select = document.getElementById('exerciseSelect');
+        const key = select.value;
+        const escala = ESCALAS[key];
+        if (!escala) return;
+        
+        const btn = document.getElementById('btnPlayExercise');
+        if (isPlayingExercise) {
+            clearInterval(playInterval);
+            playInterval = null;
+            isPlayingExercise = false;
+            btn.textContent = '▶ Tocar';
+            btn.classList.remove('playing');
+            return;
+        }
+        
+        isPlayingExercise = true;
+        btn.textContent = '⏹ Parar';
+        btn.classList.add('playing');
+        
+        let idx = 0;
+        const notas = escala.notas;
+        
+        // Tocar as notas em sequência
+        playInterval = setInterval(() => {
+            if (idx >= notas.length) {
+                clearInterval(playInterval);
+                playInterval = null;
+                isPlayingExercise = false;
+                btn.textContent = '▶ Tocar';
+                btn.classList.remove('playing');
+                return;
+            }
+            
+            const nota = notas[idx];
+            const freq = getNoteFreq(nota);
+            if (freq > 0) {
+                // Tocar a nota (usando Web Audio)
+                playTone(freq);
+                
+                // Destacar na escala
+                const scaleNotes = document.querySelectorAll('.scale-note');
+                scaleNotes.forEach((el, i) => {
+                    el.classList.remove('current-target');
+                    if (i === idx) el.classList.add('current-target');
+                });
+                
+                // Atualizar display
+                document.getElementById('display').textContent = nota;
+                document.getElementById('display').className = 'display exercise';
+                document.getElementById('displaySub').textContent = `🎵 ${nota} (${Math.round(freq)} Hz)`;
+            }
+            
+            idx++;
+        }, 600);
+    }
+    
+    function playTone(freq) {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.value = 0.15;
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            setTimeout(() => {
+                osc.stop();
+                ctx.close();
+            }, 500);
+        } catch (e) {
+            // Silencia erros de áudio
+        }
+    }
+    
+    function startExercise() {
+        const select = document.getElementById('exerciseSelect');
+        const key = select.value;
+        const escala = ESCALAS[key];
+        if (!escala) return;
+        
+        exercicioAtivo = true;
+        escalaAtual = escala;
+        indiceEscala = 0;
+        exercicioNotasAcertadas = 0;
+        exercicioTotalNotas = escala.notas.length;
+        
+        // Mostrar a escala
+        const scaleDisplay = document.getElementById('scaleDisplay');
+        scaleDisplay.innerHTML = '';
+        escala.notas.forEach((nota, i) => {
+            const div = document.createElement('div');
+            div.className = 'scale-note';
+            if (i === 0) div.classList.add('current-target');
+            div.textContent = nota;
+            scaleDisplay.appendChild(div);
+        });
+        
+        document.getElementById('btnStartExercise').disabled = true;
+        document.getElementById('btnStartExercise').textContent = '⏳ Executando...';
+        document.getElementById('displayArea').className = 'display-area exercise';
+        document.getElementById('display').textContent = '🎯';
+        document.getElementById('display').className = 'display exercise';
+        document.getElementById('displaySub').textContent = `Cante: ${escala.nome}`;
+        document.getElementById('statusDot').className = 'status-dot exercise';
+        document.getElementById('modeText').textContent = 'EXERCÍCIO ATIVO';
+        
+        // Tocar a primeira nota como referência
+        setTimeout(() => {
+            const primeiraNota = escala.notas[0];
+            const freq = getNoteFreq(primeiraNota);
+            if (freq > 0) playTone(freq);
+        }, 500);
+    }
+    
+    // ============================================================
+    //  MÚSICA
+    // ============================================================
+    function loadMusic() {
+        const input = document.getElementById('musicInput');
         const text = input.value;
         if (!text.trim()) {
-            alert('Por favor, cole a letra da
+            alert('Cole a música com cifras!');
+            return;
+        }
+        
+        // Processa a música
+        const lines = text.split('\n').filter(l => l.trim());
+        musicaAtual = [];
+        
+        lines.forEach(line => {
+            // Detecta cifras entre colchetes [C]
+            const parts = line.split(/(\[[^\]]+\])/);
+            let currentChord = null;
+            
+            parts.forEach(part => {
+                if (part.match(/^\[.+\]$/)) {
+                    // É uma cifra
+                    currentChord = part.replace(/[\[\]]/g, '');
+                } else if (part.trim()) {
+                    // É texto - associa a cifra atual
+                    const words = part.trim().split(/\s+/);
+                    words.forEach(word => {
+                        if (word) {
+                            musicaAtual.push({
+                                word: word,
+                                chord: currentChord,
+                                nota: currentChord,
+                                acertou: false,
+                                errou: false
+                            });
+                        }
+                    });
+                }
+            });
+        });
+        
+        if (musicaAtual.length === 0) {
+            alert('Nenhuma palavra com cifra encontrada!');
+            return;
+        }
+        
+        document.getElementById('btnStartMusic').disabled = false;
+        document.getElementById('btnStartMusic').textContent = '🎤 Começar';
+        document.getElementById('displaySub').textContent = `📥 ${musicaAtual.length} palavras carregadas`;
+        input.placeholder = `✅ ${musicaAtual.length} palavras carregadas!`;
+        
+        // Mostra preview
+        let preview = '';
+        musicaAtual.forEach(item => {
+            if (item.chord) preview += `[${item.chord}] `;
+            preview += `${item.word} `;
+        });
+        document.getElementById('display').textContent = '📝';
+        document.getElementById('display').className = 'display idle';
+    }
+    
+    function startMusic() {
+        if (musicaAtual.length === 0) {
+            alert('Carregue uma música primeiro!');
+            return;
+        }
+        
+        musicaAtiva = true;
+        musicaIndex = 0;
+        musicaAcertos = 0;
+        musicaErros = 0;
+        
+        document.getElementById('btnStartMusic').disabled = true;
+        document.getElementById('btnStartMusic').textContent = '🎤 Cantando...';
+        document.getElementById('displayArea').className = 'display-area recording';
+        document.getElementById('statusDot').className = 'status-dot recording';
+        document.getElementById('modeText').textContent = 'CANTANDO...';
+        document.getElementById('display').textContent = '🎤';
+        document.getElementById('displaySub').textContent = `Vamos começar! (1/${musicaAtual.length})`;
+        
+        // Mostra primeira nota
+        const primeira = musicaAtual[0];
+        if (primeira.chord) {
+            setTimeout(() => {
+                const freq = getNoteFreq(primeira.chord);
+                if (freq > 0) playTone(freq);
+                document.getElementById('displaySub').textContent = `🎵 Cante: ${primeira.chord}`;
+            }, 500);
+        }
+    }
+    
+    // ============================================================
+    //  HISTÓRICO
+    // ============================================================
+    function updateHistory() {
+        const container = document.getElementById('historyContainer');
+        container.innerHTML = '';
+        
+        if (historico.length === 0) {
+            container.innerHTML = '<div class="history-empty">Histórico de notas</div>';
+            return;
+        }
+        
+        const recent = historico.slice(-20);
+        recent.forEach((item, i) => {
+            const div = document.createElement('div');
+            div.className = 'history-item';
+            if (i === recent.length - 1) div.classList.add('current');
+            if (item.correto === false) div.classList.add('wrong');
+            
+            let label = item.nota || '---';
+            if (item.modo === 'EXERCÍCIO' && item.esperado) {
+                label = `${item.nota}/${item.esperado}`;
+            }
+            div.textContent = `${label} ${item.tempo || ''}`;
+            container.appendChild(div);
+        });
+    }
+    
+    // ============================================================
+    //  EXPORTAR PDF
+    // ============================================================
+    function exportPDF() {
+        if (historico.length === 0) {
+            alert('Nenhuma nota detectada para exportar.');
+            return;
+        }
+        
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(18);
+            doc.setTextColor(0, 230, 118);
+            doc.text('Max Ear AI Pro', 20, 25);
+            
+            doc.setFontSize(11);
+            doc.setTextColor(200, 200, 200);
+            doc.text(`Modo: ${modo}`, 20, 38);
+            doc.text(`Data: ${new Date().toLocaleString()}`, 20, 46);
+            doc.text(`Total: ${historico.length} registros`, 20, 54);
+            
+            let y = 70;
+            doc.setFontSize(8);
+            
+            // Histórico detalhado
+            historico.forEach((item, i) => {
+                if (y > 270) { doc.addPage(); y = 20; }
+                let text = `${i+1}. `;
+                if (item.modo === 'AFINADOR') {
+                    text += `${item.nota} - ${item.freq}Hz - ${item.status || ''}`;
+                } else if (item.modo === 'EXERCÍCIO') {
+                    text += `Exercício: ${item.nota} → ${item.esperado || ''} ${item.correto ? '✅' : '❌'}`;
+                } else if (item.modo === 'MÚSICA') {
+                    text += `Música: ${item.nota}`;
+                } else {
+                    text += `${item.nota} - ${item.detalhe || ''}`;
+                }
+                text += ` (${item.tempo})`;
+                doc.text(text, 20, y);
+                y += 5;
+            });
+            
+            doc.save('max-ear-report.pdf');
+            
+        } catch (err) {
+            alert('Erro ao gerar PDF: ' + err.message);
+        }
+    }
+    
+    // ============================================================
+    //  EVENT LISTENERS
+    // ============================================================
+    window.addEventListener('load', () => {
+        initCanvas();
+        drawEmptyCanvas();
+        
+        document.getElementById('btnRecord').onclick = () => {
+            if (isRecording) parar();
+            else iniciar();
+        };
+        
+        document.getElementById('btnExport').onclick = exportPDF;
+    });
+    
+    window.addEventListener('beforeunload', () => {
+        if (isRecording) parar();
+        if (playInterval) clearInterval(playInterval);
+    });
+</script>
+</body>
+</html>
